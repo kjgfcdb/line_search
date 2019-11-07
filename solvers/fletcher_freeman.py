@@ -7,10 +7,14 @@ from functions import Phi_func
 
 
 def _get_d(g, G):
-    L, D = bunch_parlett(G)
+    try:
+        L, D = bunch_parlett(G)
+    except:
+        return None
     eig, _ = np.linalg.eig(D)
     if all(i > 0 for i in eig):
-        d = - np.linalg.inv(L.T).dot(np.linalg.inv(D)).dot(np.linalg.inv(L)).dot(g)
+        d = - np.linalg.inv(L.T).dot(np.linalg.inv(D)
+                                     ).dot(np.linalg.inv(L)).dot(g)
     else:
         D_hat = np.zeros(D.shape)
         for i in range(D.shape[0]):
@@ -38,19 +42,29 @@ def _get_d(g, G):
 def fletcher_freeman(func, x0, **kwargs):
     epsilon = kwargs['epsilon']
     line_search_func = kwargs['line_search_func']
+    safe_guard = kwargs['safe_guard'] if 'safe_guard' in kwargs else None
     k = 0
     f_hist = None
+    failed = False
     while True:
         f, g, G = func(x0)
-        if k > 200:
+        if safe_guard is not None and k > safe_guard:
             break
         if f_hist is not None and np.abs(f_hist - f) < epsilon:
             break
         f_hist = f
         d = _get_d(g, G)
+        if d is None:
+            failed = True
+            break
         phi = Phi_func(func, x0, d)
-        alpha = line_search_func(phi, safe_guard=True)
+        alpha = line_search_func(phi, safe_guard=safe_guard)
+        if np.isnan(alpha) or np.isinf(alpha):
+            failed = True
+            break
         x0 = x0 + alpha * d
         k += 1
         print(f"Epoch: {k}\t function value: {f}")
+    if failed:
+        print("\n", "<"*10, "Optimization failed!", ">"*10, "\n")
     return x0, f, g

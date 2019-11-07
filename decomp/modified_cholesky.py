@@ -1,24 +1,18 @@
 import numpy as np
+from itertools import product
 
 
 def m_cholesky(G):
     # init
-    delta = 1e-5
+    delta = 1e-8
     n = G.shape[0]
     L = np.zeros((n, n))
     D = np.zeros((n, n))
     E = np.zeros((n, n))
     C = np.zeros((n, n))
     nu = max(np.sqrt(n ** 2 - 1), 1)
-    gamma = float('-inf')
-    for i in range(n):
-        gamma = max(gamma, np.abs(G[i][i]))
-    xi = float('-inf')
-    for i in range(n):
-        for j in range(n):
-            if i == j:
-                continue
-            xi = max(xi, np.abs(G[i][j]))
+    gamma = max(np.abs(G[i][i]) for i in range(n))
+    xi = max(np.abs(G[i][j]) for i,j in product(range(n), range(n)) if i!=j)
     beta_2 = max([gamma, xi / nu])
     for i in range(n):
         C[i][i] = G[i][i]
@@ -27,15 +21,12 @@ def m_cholesky(G):
     while True:
         c_ii = [np.abs(C[i][i]) for i in range(j, n)]
         q = np.argmax(c_ii) + j
-        G[[q, j], :] = G[[j, q], :]
-        G[:, [q, j]] = G[:, [j, q]]
+        # G[[q, j], :] = G[[j, q], :]
+        # G[:, [q, j]] = G[:, [j, q]]
         for s in range(j):
             L[j][s] = C[j][s] / D[s][s]
         for i in range(j + 1, n):
-            temp = 0
-            for s in range(j):
-                temp += L[j][s] * C[i][s]
-            C[i][j] = G[i][j] - temp
+            C[i][j] = G[i][j] - sum(L[j][s]*C[i][s] for s in range(j))
         if j == n - 1:
             theta_j = 0
         else:
@@ -52,16 +43,13 @@ def m_cholesky(G):
     return L, D, E
 
 
-def test(A, B):
-    C = A - B
-    F = (C ** 2).sum()
-    return F
-
-
 if __name__ == "__main__":
-    G = np.array([
-        [1, 1, 2],
-        [1, 1 + 20 ** (-20), 3],
-        [2, 3, 1]
-    ])
-    L, D, E = m_cholesky(G.copy())
+    for i in range(10):
+        m = np.random.randn(12,12)
+        m = m.dot(m.T)
+        m_old = m.copy()
+        L, D, E = m_cholesky(m)
+        A = L.dot(D).dot(L.T)
+        B = m_old + E
+        # print(np.linalg.norm(A-B))
+        print(np.allclose(A,B))

@@ -1,3 +1,4 @@
+import numpy as np
 from conditions import wolfe, strict_wolfe
 from step_size import interp22
 
@@ -12,6 +13,8 @@ def wolfe_powell_linesearch(phi, stepsize=0.5, rho=0.25, sigma=0.75, use_strict_
     while True:
         if safe_guard is not None and cnt > safe_guard:
             break
+        # if np.isnan(stepsize) or np.isinf(stepsize):
+            # return 0
         cnt += 1
         f_new, g_new = phi(stepsize)
         if use_strict_wolfe:
