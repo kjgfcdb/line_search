@@ -19,5 +19,5 @@ def damp_newton(func, x0, line_search_func, **kwargs):
         alpha = line_search_func(phi, **kwargs)
         x0 = x0 + alpha * d
         k += 1
-        print(f"Epoch: {k}\t function value: {f}")
+        print(f"Damp Newton: Epoch: {k}\t function value: {f}")
     return x0, f, g

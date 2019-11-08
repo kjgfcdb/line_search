@@ -62,7 +62,7 @@ def fletcher_freeman(func, x0, line_search_func, **kwargs):
             break
         x0 = x0 + alpha * d
         k += 1
-        print(f"Epoch: {k}\t function value: {f}")
+        print(f"Fletcher Freeman: Epoch: {k}\t function value: {f}")
     if failed:
         print("\n", "<"*10, "Optimization failed!", ">"*10, "\n")
     return x0, f, g
