@@ -18,24 +18,57 @@ def cvt2numpy(f_sympy, g_sympy, G_sympy, x_sympy):
     return f_numpy, g_numpy, G_numpy
 
 
+def call_counter(count=True):
+    def _call_counter(func):
+        num = 0
+        def wrapper(*args, **kwargs):
+            nonlocal num
+            num += 1
+            if count:
+                print(f"===== call {num} =====")
+            return func(*args, **kwargs)
+        return wrapper
+    return _call_counter
+
+
 class Evaluater:
     def __init__(self, func_name, **kwargs):
         if func_name == "powell_badly_scaled":
             f, g, G = powell_badly_scaled_numpy()
+            m = 2
+            init = [0, 1]
         elif func_name == "biggs_exp6":
-            m = kwargs['m']
+            m = kwargs['m'] if kwargs['m'] > 0 else 13
             f, g, G = biggs_exp6_numpy(m)
+            init = [1, 2, 1, 1, 1, 1]
         elif func_name == 'extended_powell_singular':
-            m = kwargs['m']
+            m = kwargs['m'] if kwargs['m'] > 0 else 20
             f, g, G = extended_powell_singular_numpy(m)
+            init = []
+            for i in range(m):
+                if i % 4 == 0:
+                    init.append(3)
+                elif i % 4 == 1:
+                    init.append(-1)
+                elif i % 4 == 2:
+                    init.append(0)
+                else:
+                    init.append(1)
         else:
             raise NotImplementedError()
         self.f = f
         self.g = g
         self.G = G
+        self.init = init
+        count = kwargs['count']
+        self.work = call_counter(count)(self.work)
+
+    def work(self, x):
+        f, g, G = (np.array(func(x)) for func in (self.f, self.g, self.G))
+        return f, g, G
 
     def __call__(self, x):
-        f, g, G = (np.array(func(x)) for func in (self.f, self.g, self.G))
+        f, g, G = self.work(x)
         return f, g, G
 
 
@@ -74,7 +107,8 @@ def biggs_exp6_numpy(m):
         for i in range(m):
             ti = 0.1 * (i + 1)
             yi = exp(-ti) - 5 * exp(-10 * ti) + 3 * exp(-4 * ti)
-            temp = x[2] * exp(-ti * x[0]) - x[3] * exp(-ti * x[1]) + x[5] * exp(-ti * x[4]) - yi
+            temp = x[2] * exp(-ti * x[0]) - x[3] * \
+                exp(-ti * x[1]) + x[5] * exp(-ti * x[4]) - yi
             r.append(temp)
         return sum(item ** 2 for item in r)
 

@@ -13,8 +13,7 @@ def _get_d(g, G):
         return None
     eig, _ = np.linalg.eig(D)
     if all(i > 0 for i in eig):
-        d = - np.linalg.inv(L.T).dot(np.linalg.inv(D)
-                                     ).dot(np.linalg.inv(L)).dot(g)
+        d = - np.linalg.inv(G).dot(g)
     else:
         D_hat = np.zeros(D.shape)
         for i in range(D.shape[0]):

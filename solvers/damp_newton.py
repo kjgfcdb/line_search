@@ -5,11 +5,12 @@ from functions import Phi_func
 def damp_newton(func, x0, **kwargs):
     line_search_func = kwargs['line_search_func']
     epsilon = kwargs['epsilon']
+    safe_guard = kwargs['safe_guard'] if 'safe_guard' in kwargs else None
     f_hist = None
     k = 0
     while True:
         f, g, G = func(x0)
-        if k > 200:
+        if safe_guard is not None and k > safe_guard:
             break
         if f_hist is not None and np.abs(f_hist - f) < epsilon:
             break
