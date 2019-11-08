@@ -4,10 +4,9 @@ from decomp import m_cholesky
 from functions import Phi_func
 
 
-def stable_newton(func, x0, **kwargs):
+def stable_newton(func, x0, line_search_func, **kwargs):
     # Gill Murray等人提出的稳定牛顿法
     epsilon = kwargs['epsilon']
-    line_search_func = kwargs['line_search_func']
     safe_guard = kwargs['safe_guard'] if "safe_guard" in kwargs else None
     g_epsilon = 1e-8
     f_hist = None
@@ -15,7 +14,9 @@ def stable_newton(func, x0, **kwargs):
     while True:
         f, g, G = func(x0)
         if f_hist is not None:
-            if f >= f_hist or np.abs(f - f_hist) < epsilon:
+            if f > f_hist and kwargs['line_search_method'] != 'gll':
+                break
+            if np.abs(f - f_hist) < epsilon:
                 break
         f_hist = f
         if safe_guard is not None and k > safe_guard:

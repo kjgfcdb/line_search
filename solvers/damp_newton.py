@@ -2,8 +2,7 @@ import numpy as np
 from functions import Phi_func
 
 
-def damp_newton(func, x0, **kwargs):
-    line_search_func = kwargs['line_search_func']
+def damp_newton(func, x0, line_search_func, **kwargs):
     epsilon = kwargs['epsilon']
     safe_guard = kwargs['safe_guard'] if 'safe_guard' in kwargs else None
     f_hist = None

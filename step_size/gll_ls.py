@@ -20,5 +20,4 @@ class gll_linesearch:
             else:
                 break
             k += 1
-        print(stepsize)
         return stepsize

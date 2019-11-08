@@ -38,9 +38,8 @@ def _get_d(g, G):
     return d
 
 
-def fletcher_freeman(func, x0, **kwargs):
+def fletcher_freeman(func, x0, line_search_func, **kwargs):
     epsilon = kwargs['epsilon']
-    line_search_func = kwargs['line_search_func']
     safe_guard = kwargs['safe_guard'] if 'safe_guard' in kwargs else None
     k = 0
     f_hist = None

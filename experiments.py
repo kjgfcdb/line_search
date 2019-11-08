@@ -27,7 +27,12 @@ def main(func_name, line_search_method, solver_name, **kwargs):
     func = Evaluater(func_name, **kwargs)
     init = func.init
     solver = SOLVERS[solver_name]
-    x, f, g = solver(func, init, line_search_func=line_search_func, epsilon=1e-15, safe_guard=200)
+    kwargs.update(dict(
+        line_search_method = line_search_method,
+        epsilon = 1e-15,
+        safe_guard = 200
+    ))
+    x, f, g = solver(func, init, line_search_func, **kwargs)
     print(f"x: {x}\tf: {f}\tg: {g}")
 
 
