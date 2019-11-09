@@ -3,6 +3,7 @@ from solvers import damp_newton, fletcher_freeman, stable_newton
 from step_size import armijo_goldstein_linesearch, wolfe_powell_linesearch, gll_linesearch, simple_linesearch
 from stackprinter import set_excepthook
 import argparse
+import numpy as np
 
 set_excepthook(style='darkbg2')
 
@@ -29,11 +30,11 @@ def main(func_name, line_search_method, solver_name, **kwargs):
     solver = SOLVERS[solver_name]
     kwargs.update(dict(
         line_search_method = line_search_method,
-        epsilon = 1e-15,
+        epsilon = 1e-8,
         safe_guard = 200
     ))
     x, f, g = solver(func, init, line_search_func, **kwargs)
-    print(f"x: {x}\tf: {f}\tg: {g}")
+    print("x: {}\tf: {}".format(repr(x), f))
 
 
 if __name__ == '__main__':
@@ -86,5 +87,6 @@ if __name__ == '__main__':
     # solver_name = "fletcher_freeman"
     # solver_name = "stable_newton"
     print(args)
+    np.set_printoptions(precision=4, suppress=True) #设置浮点精度
 
     main(func_name, line_search_method, solver_name, m=m, count=count)

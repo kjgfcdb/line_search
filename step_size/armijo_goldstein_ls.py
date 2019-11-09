@@ -1,7 +1,7 @@
 from conditions import armijo_goldstein
 
 
-def armijo_goldstein_linesearch(phi, stepsize=1, rho=0.25, t=1.2, alpha_max=float('inf'), **kwargs):
+def armijo_goldstein_linesearch(phi, stepsize=1, rho=0.1, t=1.2, alpha_max=float('inf'), **kwargs):
     a = 0
     b = alpha_max
     safe_guard = kwargs['safe_guard'] if 'safe_guard' in kwargs else None

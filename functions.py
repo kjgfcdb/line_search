@@ -38,7 +38,7 @@ class Evaluater:
             m = 2
             init = [0, 1]
         elif func_name == "biggs_exp6":
-            m = kwargs['m'] if kwargs['m'] > 0 else 13
+            m = kwargs['m'] if kwargs['m'] > 0 else 8
             f, g, G = biggs_exp6_numpy(m)
             init = [1, 2, 1, 1, 1, 1]
         elif func_name == 'extended_powell_singular':
