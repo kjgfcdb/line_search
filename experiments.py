@@ -21,7 +21,7 @@ SOLVERS = {
 
 def main(func_name, line_search_method, solver_name, **kwargs):
     """主函数，用于执行优化算法
-    
+
     Parameters
     ----------
     func_name : str
@@ -39,7 +39,7 @@ def main(func_name, line_search_method, solver_name, **kwargs):
     solver = SOLVERS[solver_name]
     kwargs.update(dict(
         line_search_method = line_search_method,
-        epsilon = 1e-8,
+        epsilon = kwargs['eps'],
         safe_guard = 200
     ))
     x, f, g = solver(func, init, line_search_func, **kwargs)
@@ -72,6 +72,11 @@ if __name__ == '__main__':
         default=-1,
     )
     parser.add_argument(
+        "-eps",
+        type=float,
+        default=1e-8
+    )
+    parser.add_argument(
         "-count",
         dest='count',
         action='store_true'
@@ -83,6 +88,7 @@ if __name__ == '__main__':
     solver_name = args.solver
     m = args.m
     count = args.count
+    eps = args.eps
     # func_name = "powell_badly_scaled"
     # func_name = "biggs_exp6"
     # func_name = "extended_powell_singular"
@@ -98,4 +104,4 @@ if __name__ == '__main__':
     print(args)
     np.set_printoptions(precision=4, suppress=True) #设置浮点精度
 
-    main(func_name, line_search_method, solver_name, m=m, count=count)
+    main(func_name, line_search_method, solver_name, m=m, count=count, eps=eps)

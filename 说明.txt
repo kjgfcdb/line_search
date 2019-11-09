@@ -6,7 +6,7 @@
         sympy==1.4
 2. 运行方法
     使用命令
-    python experiments.py -s SOLVER -f FUNC_NAME -l LINE_SEARCH_METHOD -m m
+    python experiments.py -s SOLVER -f FUNC_NAME -l LINE_SEARCH_METHOD -m m -eps eps
 
     其中各个参数的意义以及可用值为
         SOLVER:使用的优化算法，可选值包括"damp_newton", "stable_newton", "fletcher_freeman"
@@ -14,6 +14,7 @@
         LINE_SEARCH_METHOD:使用的线搜索准则，可选值包括"armijo_goldstein", "wolfe_powell", "gll"
         m:指定目标函数中的m值，对于powell_badly_scaled函数，这个选项可以不指定，即可以使用命令
             python experiments.py -s SOLVER -f "powell_badly_scaled" -l LINE_SEARCH_METHOD
+        eps:指定优化过程中的精度，如果不指定该选项，则默认为1e-8，否则可以通过'-eps 1e-15'来指定精度为1e-15
 
 3. 结果说明
     例如，在屏幕上输出的最后一行为
