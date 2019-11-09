@@ -1,0 +1,21 @@
+1. 环境需求
+    python版本需求:3.7.3
+    python库需求:
+        scipy==1.3.0
+        numpy==1.16.4
+        sympy==1.4
+2. 运行方法
+    使用命令
+    python experiments.py -s SOLVER -f FUNC_NAME -l LINE_SEARCH_METHOD -m m
+
+    其中各个参数的意义以及可用值为
+        SOLVER:使用的优化算法，可选值包括"damp_newton", "stable_newton", "fletcher_freeman"
+        FUNC_NAME:要优化的目标函数，可选值包括"powell_badly_scaled", "biggs_exp6", "extended_powell_singular"
+        LINE_SEARCH_METHOD:使用的线搜索准则，可选值包括"armijo_goldstein", "wolfe_powell", "gll"
+        m:指定目标函数中的m值，对于powell_badly_scaled函数，这个选项可以不指定，即可以使用命令
+            python experiments.py -s SOLVER -f "powell_badly_scaled" -l LINE_SEARCH_METHOD
+
+3. 结果说明
+    例如，在屏幕上输出的最后一行为
+        x: array([-0.9893, -1.0699, 17.2612, 16.6192, -0.9966,  0.6829])	f: 0.14968028598191768
+    这表示得到的最优解为x = (-0.9893, -1.0699, 17.2612, 16.6192, -0.9966,  0.6829)，最优解对应的函数值为f = 0.14968028598191768

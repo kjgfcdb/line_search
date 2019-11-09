@@ -1,11 +1,9 @@
 from functions import Evaluater
 from solvers import damp_newton, fletcher_freeman, stable_newton
 from step_size import armijo_goldstein_linesearch, wolfe_powell_linesearch, gll_linesearch, simple_linesearch
-from stackprinter import set_excepthook
 import argparse
 import numpy as np
 
-set_excepthook(style='darkbg2')
 
 LINE_SEARCH_METHODS = {
     "armijo_goldstein": armijo_goldstein_linesearch,
