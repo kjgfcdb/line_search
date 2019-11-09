@@ -20,6 +20,17 @@ SOLVERS = {
 
 
 def main(func_name, line_search_method, solver_name, **kwargs):
+    """主函数，用于执行优化算法
+    
+    Parameters
+    ----------
+    func_name : str
+        所需优化的函数名
+    line_search_method : str
+        使用的线搜索准则
+    solver_name : str
+        使用的优化算法名
+    """
     line_search_func = LINE_SEARCH_METHODS[line_search_method]
     if line_search_method == "gll":
         line_search_func = line_search_func(**kwargs)

@@ -4,6 +4,25 @@ from step_size import interp22
 
 
 def wolfe_powell_linesearch(phi, stepsize=1, rho=0.1, sigma=0.75, use_strict_wolfe=False, **kwargs):
+    """Wolfe Powell线搜索准则
+    
+    Parameters
+    ----------
+    phi : 函数
+        定义的phi函数
+    stepsize : float
+        初始步长
+    rho : float
+        Wolfe准则中使用的\rho
+    sigma : float
+        Wolfe准则中使用的\sigma
+    use_strict_wolfe : bool
+        是否使用严格Wolfe Powell准则
+    
+    Returns
+    -------
+    搜索得到的步长
+    """
     a = 0
     safe_guard = kwargs['safe_guard'] if 'safe_guard' in kwargs else None
     # b = alpha_max

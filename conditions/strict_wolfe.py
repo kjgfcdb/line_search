@@ -3,9 +3,18 @@ import numpy as np
 
 def strict_wolfe(f_new, f, alpha, g_new, g, d, rho=0.25, sigma=0.75):
     """
-    Check if the wolfe condition is statisfied, i.e
+    判断是否满足严格Wolfe准则
         f_new <= f + rho * alpha * g * d
         |g_new * d| <= -sigma * g * d
+    input:
+        f_new:新函数值
+        f:旧函数值
+        alpha:步长
+        g_new:新的梯度值
+        g:旧梯度值
+        d:下降方向
+        rho:Wolfe准则中的\rho
+        sigma:Wolfe准则中的\sigma
     output:
         cond: 长度为2的数组，cond[0]为True则表示第一个条件满足，cond[1]为True表示第二个条件满足
     """

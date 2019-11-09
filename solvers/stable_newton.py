@@ -5,6 +5,18 @@ from functions import Phi_func
 
 
 def stable_newton(func, x0, line_search_func, **kwargs):
+    """稳定牛顿法
+
+    Parameters
+    ----------
+    func : 函数
+    x0 : 初始点
+    line_search_func : 线搜索函数
+    
+    Returns
+    -------
+    返回函数最优解，最优解对应的函数值以及导数值
+    """
     # Gill Murray等人提出的稳定牛顿法
     epsilon = kwargs['epsilon']
     safe_guard = kwargs['safe_guard'] if "safe_guard" in kwargs else None

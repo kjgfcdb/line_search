@@ -3,6 +3,16 @@ from itertools import product
 
 
 def m_cholesky(G):
+    """修正Cholesky分解
+    
+    Parameters
+    ----------
+    G : 输入的矩阵
+    
+    Returns
+    -------
+    返回修正Cholesky分解之后得到的L，D，E矩阵
+    """
     # init
     delta = 1e-8
     n = G.shape[0]
@@ -41,15 +51,3 @@ def m_cholesky(G):
     for i in range(n):
         L[i][i] = 1
     return L, D, E
-
-
-if __name__ == "__main__":
-    for i in range(10):
-        m = np.random.randn(12,12)
-        m = m.dot(m.T)
-        m_old = m.copy()
-        L, D, E = m_cholesky(m)
-        A = L.dot(D).dot(L.T)
-        B = m_old + E
-        # print(np.linalg.norm(A-B))
-        print(np.allclose(A,B))

@@ -4,7 +4,25 @@ from conditions import armijo_goldstein
 
 
 def simple_linesearch(phi, rho=0.25, lb=0.1, ub=0.9, minstep=1e-4, **kwargs):
-    # TODO: 此处实现二次插值
+    """简单线搜索算法
+    
+    Parameters
+    ----------
+    phi : 函数
+        定义的phi函数
+    rho : float
+        Armijo Goldstein准则中的\rho
+    lb : float, optional
+        每次随机的上界
+    ub : float, optional
+        每次随机的下界
+    minstep : float
+        每次最小的步长阈值
+    
+    Returns
+    -------
+    返回简单线搜索算法得到的步长
+    """
     assert 0 < rho < 0.5
     assert 0 < lb < ub < 1
     safe_guard = kwargs['safe_guard'] if 'safe_guard' in kwargs else None
