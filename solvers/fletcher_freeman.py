@@ -8,12 +8,12 @@ from functions import Phi_func
 
 def _get_d(g, G):
     """Fletcher Freeman中计算出下降方向的算法
-    
+
     Parameters
     ----------
     g : 函数的导数
     G : 函数的Hessian矩阵
-    
+
     Returns
     -------
     返回下降方向d
@@ -57,7 +57,7 @@ def fletcher_freeman(func, x0, line_search_func, **kwargs):
     func : 函数
     x0 : 初始点
     line_search_func : 线搜索函数
-    
+
     Returns
     -------
     返回函数最优解，最优解对应的函数值以及导数值
@@ -85,7 +85,7 @@ def fletcher_freeman(func, x0, line_search_func, **kwargs):
             break
         x0 = x0 + alpha * d
         k += 1
-        print(f"Fletcher Freeman: Epoch: {k}\t function value: {f}")
+    print(f"Fletcher Freeman: Epoch: {k}\t function value: {f}")
     if failed:
         print("\n", "<"*10, "Optimization failed!", ">"*10, "\n")
     return x0, f, g

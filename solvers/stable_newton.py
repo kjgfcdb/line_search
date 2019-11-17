@@ -12,7 +12,7 @@ def stable_newton(func, x0, line_search_func, **kwargs):
     func : 函数
     x0 : 初始点
     line_search_func : 线搜索函数
-    
+
     Returns
     -------
     返回函数最优解，最优解对应的函数值以及导数值
@@ -53,6 +53,5 @@ def stable_newton(func, x0, line_search_func, **kwargs):
         alpha = line_search_func(phi, safe_guard=safe_guard)
         x0 = x0 + alpha * d
         k += 1
-        print(f"Stable Newton: Epoch: {k}\t function value: {f}")
-
+    print(f"Stable Newton: Epoch: {k}\t function value: {f}")
     return x0, f, g
