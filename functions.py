@@ -1,18 +1,18 @@
 import numpy as np
-from sympy import exp, symarray, sqrt, diff
+from sympy import exp, symarray, sqrt, diff, cos, I, sin
 from sympy.utilities.lambdify import lambdify
 
 
 def fgG(f, x_sympy):
     """对给定的函数进行求导，并返回函数、导数以及Hessian矩阵对应的数值函数
-    
+
     Parameters
     ----------
     f : sympy表达式
         原始定义的sympy函数
     x_sympy : sympy符号数组
         f的变量
-    
+
     Returns
     -------
     返回f, g, G，分别是函数、函数的导数、函数的Hessian矩阵对应的数值函数。
@@ -26,18 +26,18 @@ def fgG(f, x_sympy):
 
 def cvt2numpy(f_sympy, g_sympy, G_sympy, x_sympy):
     """将sympy类型的函数转换为numpy类的函数，使之可以进行数值计算
-    
+
     Parameters
     ----------
     f_sympy : sympy表达式
         sympy类型的函数定义
     g_sympy : sympy表达式
-        f的导数函数 
+        f的导数函数
     G_sympy : sympy表达式
         f的Hessian函数
     x_sympy : sympy符号数组
         f的输入变量
-    
+
     Returns
     -------
     返回f_numpy, g_numpy, G_numpy，分别是函数、函数的导数、函数的Hessian矩阵对应的数值函数
@@ -50,7 +50,7 @@ def cvt2numpy(f_sympy, g_sympy, G_sympy, x_sympy):
 
 def call_counter(count=True):
     """对调用的函数统计其调用次数
-    
+
     Parameters
     ----------
     count : bool, optional
@@ -58,6 +58,7 @@ def call_counter(count=True):
     """
     def _call_counter(func):
         num = 0
+
         def wrapper(*args, **kwargs):
             nonlocal num
             num += 1
@@ -71,7 +72,7 @@ def call_counter(count=True):
 class Evaluater:
     def __init__(self, func_name, **kwargs):
         """代值计算函数，给定函数名，返回一个可以代入求值的具体函数
-        
+
         Parameters
         ----------
         func_name : str
@@ -98,23 +99,38 @@ class Evaluater:
                     init.append(0)
                 else:
                     init.append(1)
+        elif func_name == "penalty_i":
+            n = kwargs['n'] if kwargs['n'] > 0 else 1000
+            f, g, G = penalty_i_numpy(n)
+            init = [i+1 for i in range(n)]
+        elif func_name == "trigonometric":
+            n = kwargs['n'] if kwargs['n'] > 0 else 1000
+            f, g, G = trigonometric_numpy(n)
+            init = list(1/n for i in range(n))
+        elif func_name == "extended_rosenbrock":
+            n = kwargs['n'] if kwargs['n'] > 0 else 1000
+            f, g, G = extended_rosenbrock_numpy(n)
+            init = []
+            for i in range(n//2):
+                init.append(-1.2)
+                init.append(1)
         else:
             raise NotImplementedError()
         self.f = f
         self.g = g
         self.G = G
         self.init = init
-        count = kwargs['count']
+        count = kwargs['count'] if 'count' in kwargs else False
         self.work = call_counter(count)(self.work)
 
     def work(self, x):
         """根据输入变量返回得到函数值、导数值、以及Hessian矩阵
-        
+
         Parameters
         ----------
         x : 数字或者向量
             函数的输入
-        
+
         Returns
         -------
         返回f,g,G，分别是函数值、导数、Hessian矩阵
@@ -134,7 +150,7 @@ class Phi_func:
     def __init__(self, func, x0, d, use_G=False):
         """根据f,x0,d构造函数phi
             phi(alpha) = f(x0 + alpha * d)
-        
+
         Parameters
         ----------
         func : 目标函数
@@ -150,12 +166,12 @@ class Phi_func:
 
     def __call__(self, alpha):
         """给定alpha，返回对应的函数值、导数以及Hessian矩阵
-        
+
         Parameters
         ----------
         alpha : float
             phi函数中的alpha
-        
+
         Returns
         -------
         返回函数值、导数以及对应的Hessian矩阵
@@ -220,3 +236,43 @@ def extended_powell_singular_numpy(m):
 
     x_sympy = symarray('x', m)
     return fgG(extended_powell_singular, x_sympy)
+
+
+def penalty_i_numpy(n):
+    def penalty_i(x):
+        gamma = 1e-5
+        r = []
+        for i in range(n):
+            temp = sqrt(gamma) * (x[i] - 1)
+            r.append(temp)
+        temp = sum(n * x[i]**2 for i in range(n)) - 0.25
+        r.append(temp)
+        return sum(item**2 for item in r)
+    x_sympy = symarray('x', n)
+    return fgG(penalty_i, x_sympy)
+
+
+def trigonometric_numpy(m):
+    # n = m
+    def trigonometric(x):
+        r = []
+        sum_cos = sum(cos(x[j]) for j in range(m))
+        for i in range(m):
+            temp = m - sum_cos + I*(1-cos(x[i])) - sin(x[i])
+            r.append(temp)
+        return sum(item**2 for item in r)
+    x_sympy = symarray('x', m)
+    return fgG(trigonometric, x_sympy)
+
+
+def extended_rosenbrock_numpy(m):
+    # n = m
+    def extended_rosenbrock(x):
+        r = []
+        idxs = list(range(m))
+        for i, j in zip(idxs[0::2], idxs[1::2]):
+            r.append(10 * (x[i+1] - x[i]**2))
+            r.append(1-x[j-1])
+        return sum(item**2 for item in r)
+    x_sympy = symarray('x', m)
+    return fgG(extended_rosenbrock, x_sympy)
