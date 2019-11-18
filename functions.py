@@ -81,9 +81,9 @@ class Evaluater:
             函数名
         """
         kwargs['func_name'] = func_name
+        n = kwargs['n']
         if func_name == 'extended_powell_singular':
-            n = kwargs['n'] if kwargs['n'] > 0 else 20
-            func_list = extended_powell_singular_numpy(n, **kwargs)
+            func_list = extended_powell_singular_numpy(**kwargs)
             init = []
             for i in range(n):
                 if i % 4 == 0:
@@ -95,16 +95,13 @@ class Evaluater:
                 else:
                     init.append(1)
         elif func_name == "penalty_i":
-            n = kwargs['n'] if kwargs['n'] > 0 else 1000
-            func_list = penalty_i_numpy(n, **kwargs)
+            func_list = penalty_i_numpy(**kwargs)
             init = [i + 1 for i in range(n)]
         elif func_name == "trigonometric":
-            n = kwargs['n'] if kwargs['n'] > 0 else 1000
-            func_list = trigonometric_numpy(n, **kwargs)
+            func_list = trigonometric_numpy(**kwargs)
             init = list(1 / n for i in range(n))
         elif func_name == "extended_rosenbrock":
-            n = kwargs['n'] if kwargs['n'] > 0 else 1000
-            func_list = extended_rosenbrock_numpy(n, **kwargs)
+            func_list = extended_rosenbrock_numpy(**kwargs)
             init = []
             for i in range(n // 2):
                 init.append(-1.2)
@@ -151,10 +148,10 @@ class Evaluater:
         return self.work(x, g_only)
 
 
-def extended_powell_singular_numpy(m, **kwargs):
+def extended_powell_singular_numpy(**kwargs):
     """定义的Extended Powell Singular函数，m是其函数定义中的m
     """
-
+    m = kwargs['n']
     def extended_powell_singular(x):
         r = []
         for i in range(m):
@@ -174,7 +171,8 @@ def extended_powell_singular_numpy(m, **kwargs):
     return fgG(extended_powell_singular, x_sympy, **kwargs)
 
 
-def penalty_i_numpy(n, **kwargs):
+def penalty_i_numpy(**kwargs):
+    n = kwargs['n']
     def penalty_i(x):
         gamma = 1e-5
         r = []
@@ -189,8 +187,9 @@ def penalty_i_numpy(n, **kwargs):
     return fgG(penalty_i, x_sympy, **kwargs)
 
 
-def trigonometric_numpy(m, **kwargs):
+def trigonometric_numpy(**kwargs):
     # n = m
+    m = kwargs['n']
     def trigonometric(x):
         r = []
         sum_cos = sum(cos(x[j]) for j in range(m))
@@ -203,8 +202,9 @@ def trigonometric_numpy(m, **kwargs):
     return fgG(trigonometric, x_sympy, **kwargs)
 
 
-def extended_rosenbrock_numpy(m, **kwargs):
+def extended_rosenbrock_numpy(**kwargs):
     # n = m
+    m = kwargs['n']
     assert (m & 1) == 0
 
     def extended_rosenbrock(x):
