@@ -1,8 +1,10 @@
 from functions import Evaluater
-from solvers import damp_newton, fletcher_freeman, stable_newton
+from solvers import inexact_newton
 from step_size import armijo_goldstein_linesearch, wolfe_powell_linesearch, gll_linesearch, simple_linesearch
 import argparse
 import numpy as np
+from stackprinter import set_excepthook
+set_excepthook(style='darkbg2')
 
 
 LINE_SEARCH_METHODS = {
@@ -13,36 +15,24 @@ LINE_SEARCH_METHODS = {
 }
 
 SOLVERS = {
-    "damp_newton": damp_newton,
-    "stable_newton": stable_newton,
-    "fletcher_freeman": fletcher_freeman
+    "inexact_newton": inexact_newton
 }
 
 
-def main(func_name, line_search_method, solver_name, **kwargs):
+def main(func_name, solver_name, **kwargs):
     """主函数，用于执行优化算法
 
     Parameters
     ----------
     func_name : str
         所需优化的函数名
-    line_search_method : str
-        使用的线搜索准则
     solver_name : str
         使用的优化算法名
     """
-    line_search_func = LINE_SEARCH_METHODS[line_search_method]
-    if line_search_method == "gll":
-        line_search_func = line_search_func(**kwargs)
     func = Evaluater(func_name, **kwargs)
     init = func.init
     solver = SOLVERS[solver_name]
-    kwargs.update(dict(
-        line_search_method = line_search_method,
-        epsilon = kwargs['eps'],
-        safe_guard = 200
-    ))
-    x, f, g = solver(func, init, line_search_func, **kwargs)
+    x, f = solver(func, init, **kwargs)
     print("x: {}\tf: {}".format(repr(x), f))
 
 
@@ -55,19 +45,13 @@ if __name__ == '__main__':
         default="powell_badly_scaled"
     )
     parser.add_argument(
-        "-ls",
-        type=str,
-        help="The line search method you want to use",
-        default="armijo_goldstein"
-    )
-    parser.add_argument(
         "-solver",
         type=str,
         help="The solver that solves this optimization problem",
         default="damp_newton"
     )
     parser.add_argument(
-        "-m",
+        "-n",
         type=int,
         default=-1,
     )
@@ -84,24 +68,12 @@ if __name__ == '__main__':
     parser.set_defaults(count=False)
     args = parser.parse_args()
     func_name = args.func
-    line_search_method = args.ls
     solver_name = args.solver
-    m = args.m
     count = args.count
     eps = args.eps
-    # func_name = "powell_badly_scaled"
-    # func_name = "biggs_exp6"
-    # func_name = "extended_powell_singular"
 
-    # line_search_method = 'armijo_goldstein'
-    # line_search_method = 'wolfe_powell'
-    # line_search_method = 'simple'
-    # line_search_method = 'gll'
-
-    # solver_name = "damp_newton"
-    # solver_name = "fletcher_freeman"
-    # solver_name = "stable_newton"
     print(args)
     np.set_printoptions(precision=4, suppress=True) #设置浮点精度
 
-    main(func_name, line_search_method, solver_name, m=m, count=count, eps=eps)
+    main(func_name, solver_name, count=count, eps=eps)
+    # main("extended_rosenbrock", "inexact_newton", choice='2', n=200)
