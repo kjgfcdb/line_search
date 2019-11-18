@@ -21,6 +21,9 @@ def fgG(f, x_sympy, **kwargs):
     """
     dill.settings['recurse'] = True
     file_name = os.path.join("cache", kwargs['func_name'] + "_" + str(kwargs['n']))
+    parent, _ = os.path.split(file_name)
+    if not os.path.exists(parent):
+        os.makedirs(parent)
     if os.path.isfile(file_name):
         print("=> 已加载缓存的函数 : " + file_name)
         with open(file_name, "rb") as fp:
