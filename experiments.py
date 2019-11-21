@@ -1,11 +1,13 @@
+import argparse
+
+import numpy as np
+from stackprinter import set_excepthook
+
 from functions import Evaluater
 from solvers import inexact_newton
 from step_size import armijo_goldstein_linesearch, wolfe_powell_linesearch, gll_linesearch, simple_linesearch
-import argparse
-import numpy as np
-from stackprinter import set_excepthook
-set_excepthook(style='darkbg2')
 
+set_excepthook(style='darkbg2')
 
 LINE_SEARCH_METHODS = {
     "armijo_goldstein": armijo_goldstein_linesearch,
@@ -37,43 +39,43 @@ def main(func_name, solver_name, **kwargs):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Optimization experiments")
-    parser.add_argument(
-        "-func",
-        type=str,
-        help="The function you want to optimize",
-        default="powell_badly_scaled"
-    )
-    parser.add_argument(
-        "-solver",
-        type=str,
-        help="The solver that solves this optimization problem",
-        default="damp_newton"
-    )
-    parser.add_argument(
-        "-n",
-        type=int,
-        default=-1,
-    )
-    parser.add_argument(
-        "-eps",
-        type=float,
-        default=1e-8
-    )
-    parser.add_argument(
-        "-count",
-        dest='count',
-        action='store_true'
-    )
-    parser.set_defaults(count=False)
-    args = parser.parse_args()
-    func_name = args.func
-    solver_name = args.solver
-    count = args.count
-    eps = args.eps
-
-    print(args)
-    np.set_printoptions(precision=4, suppress=True) #设置浮点精度
-
-    main(func_name, solver_name, count=count, eps=eps)
-    # main("extended_rosenbrock", "inexact_newton", choice='2', n=200)
+    # parser = argparse.ArgumentParser(description="Optimization experiments")
+    # parser.add_argument(
+    #     "-func",
+    #     type=str,
+    #     help="The function you want to optimize",
+    #     default="powell_badly_scaled"
+    # )
+    # parser.add_argument(
+    #     "-solver",
+    #     type=str,
+    #     help="The solver that solves this optimization problem",
+    #     default="damp_newton"
+    # )
+    # parser.add_argument(
+    #     "-n",
+    #     type=int,
+    #     default=-1,
+    # )
+    # parser.add_argument(
+    #     "-eps",
+    #     type=float,
+    #     default=1e-8
+    # )
+    # parser.add_argument(
+    #     "-count",
+    #     dest='count',
+    #     action='store_true'
+    # )
+    # parser.set_defaults(count=False)
+    # args = parser.parse_args()
+    # func_name = args.func
+    # solver_name = args.solver
+    # count = args.count
+    # eps = args.eps
+    #
+    # print(args)
+    # np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
+    #
+    # main(func_name, solver_name, count=count, eps=eps)
+    main("penalty_i", "inexact_newton", choice='1', n=10)

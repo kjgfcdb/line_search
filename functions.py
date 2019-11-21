@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import dill
-from sympy import exp, symarray, sqrt, diff, cos, I, sin
+from sympy import exp, symarray, sqrt, diff, cos, sin
 from sympy.utilities.lambdify import lambdify
 
 
@@ -194,7 +194,7 @@ def trigonometric_numpy(**kwargs):
         r = []
         sum_cos = sum(cos(x[j]) for j in range(m))
         for i in range(m):
-            temp = m - sum_cos + I * (1 - cos(x[i])) - sin(x[i])
+            temp = m - sum_cos + (i+1) * (1 - cos(x[i])) - sin(x[i])
             r.append(temp)
         return sum(item ** 2 for item in r)
 
