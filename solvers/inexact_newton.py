@@ -6,9 +6,10 @@ from scipy.optimize import fminbound
 from scipy.sparse.linalg import gmres
 
 
-def get_theta(g_k, d_k, g_one, theta_min, theta_max):
+def get_theta(g_k, d_k, g_one, G, theta_min, theta_max):
     c = g_k.dot(g_k)
-    b = 2 * g_k.dot(d_k)
+    # b = 2 * g_k.dot(d_k)
+    b = 2 * d_k.dot(G).dot(g_k)
     a = g_one.dot(g_one) - b - c
 
     def temp_func(x): return a * x ** 2 + b * x + c
@@ -33,7 +34,8 @@ def inexact_newton(func, init, choice, **kwargs):
             if g_prev is None:
                 eta_k = 0.5
             else:
-                eta_k = np.abs(la.norm(g) - la.norm(g_prev + G_prev.dot(d_k))) / la.norm(g_prev)
+                eta_k = np.abs(la.norm(g) - la.norm(g_prev +
+                                                    G_prev.dot(d_k))) / la.norm(g_prev)
         elif choice == '2':
             gamma = kwargs['gamma'] if 'gamma' in kwargs else 0.5
             alpha = kwargs['alpha'] if 'alpha' in kwargs else 1.5
@@ -48,7 +50,7 @@ def inexact_newton(func, init, choice, **kwargs):
 
         while la.norm(func(init + d_k, g_only=True)) > (1 - t * (1 - eta_k)) * la.norm(g):
             g_one = func(init + d_k, g_only=True)
-            theta = get_theta(g, d_k, g_one, theta_min, theta_max)
+            theta = get_theta(g, d_k, g_one, G, theta_min, theta_max)
             d_k = theta * d_k
             eta_k = 1 - theta * (1 - eta_k)
 
@@ -57,4 +59,5 @@ def inexact_newton(func, init, choice, **kwargs):
         G_prev = G
         if la.norm(d_k) == 0:
             break
+        print(f)
     return init, f
