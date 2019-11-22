@@ -4,7 +4,7 @@ import numpy as np
 from stackprinter import set_excepthook
 
 from functions import Evaluater
-from solvers import inexact_newton
+from solvers import inexact_newton, l_bfgs, compact_l_bfgs
 from step_size import armijo_goldstein_linesearch, wolfe_powell_linesearch, gll_linesearch, simple_linesearch
 
 set_excepthook(style='darkbg2')
@@ -17,7 +17,9 @@ LINE_SEARCH_METHODS = {
 }
 
 SOLVERS = {
-    "inexact_newton": inexact_newton
+    "inexact_newton": inexact_newton,
+    "lbfgs": l_bfgs,
+    "clbfgs": compact_l_bfgs
 }
 
 

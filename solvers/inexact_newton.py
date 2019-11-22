@@ -4,6 +4,7 @@ import numpy as np
 import numpy.linalg as la
 from scipy.optimize import fminbound
 from scipy.sparse.linalg import gmres
+from tqdm import tqdm
 
 
 def get_theta(g_k, d_k, g_one, G, theta_min, theta_max):
@@ -26,6 +27,7 @@ def inexact_newton(func, init, choice, **kwargs):
 
     g_prev = None
     G_prev = None
+    bar = tqdm()
     while True:
         f, g, G = func(init)
         if la.norm(g) < eps * max(1, la.norm(init)):
@@ -59,5 +61,6 @@ def inexact_newton(func, init, choice, **kwargs):
         G_prev = G
         if la.norm(d_k) == 0:
             break
-        print(f)
+        bar.desc = '函数值:'+str(f)
+        bar.update()
     return init, f

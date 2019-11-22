@@ -19,31 +19,30 @@ def fgG(f, x_sympy, **kwargs):
     -------
     返回f, g, G，分别是函数、函数的导数、函数的Hessian矩阵对应的数值函数。
     """
-    dill.settings['recurse'] = True
-    file_name = os.path.join("cache", kwargs['func_name'] + "_" + str(kwargs['n']))
-    parent, _ = os.path.split(file_name)
-    if not os.path.exists(parent):
-        os.makedirs(parent)
-    if os.path.isfile(file_name):
-        print("=> 已加载缓存的函数 : " + file_name)
-        with open(file_name, "rb") as fp:
-            func_list = dill.load(fp)
-        return func_list
+#     dill.settings['recurse'] = True
+#     file_name = os.path.join("cache", kwargs['func_name'] + "_" + str(kwargs['n']))
+#     parent, _ = os.path.split(file_name)
+#     if not os.path.exists(parent):
+#         os.makedirs(parent)
+#     if os.path.isfile(file_name):
+#         print("=> 已加载缓存的函数 : " + file_name)
+#         with open(file_name, "rb") as fp:
+#             func_list = dill.load(fp)
+#         return func_list
 
     use_G = kwargs['use_G'] if 'use_G' in kwargs else True
-    buffer = []
     f_sympy = f(x_sympy)
-    buffer.append(f_sympy)
     g_sympy = diff(f_sympy, x_sympy).doit()
-    buffer.append(g_sympy)
     if use_G:
         G_sympy = diff(g_sympy, x_sympy).doit()
-        buffer.append(G_sympy)
-    func_list = (lambdify([x_sympy], func, 'numpy') for func in buffer)
-    func_list = list(func_list)
-    with open(file_name, "wb") as fp:
-        dill.dump(func_list, fp)
-        print("=> 缓存函数 : " + file_name)
+        func_list = list(lambdify([x_sympy], func, 'numpy')
+                         for func in (f_sympy, g_sympy, G_sympy))
+    else:
+        func_list = list(lambdify([x_sympy], func, 'numpy')
+                         for func in (f_sympy, g_sympy))
+#     with open(file_name, "wb") as fp:
+#         dill.dump(func_list, fp)
+#         print("=> 缓存函数 : " + file_name)
     return func_list
 
 
@@ -145,6 +144,7 @@ class Evaluater:
         """
         调用work函数
         """
+        x = np.array(x)
         return self.work(x, g_only)
 
 
@@ -152,6 +152,7 @@ def extended_powell_singular_numpy(**kwargs):
     """定义的Extended Powell Singular函数，m是其函数定义中的m
     """
     m = kwargs['n']
+
     def extended_powell_singular(x):
         r = []
         for i in range(m):
@@ -173,23 +174,28 @@ def extended_powell_singular_numpy(**kwargs):
 
 def penalty_i_numpy(**kwargs):
     n = kwargs['n']
-    def penalty_i(x):
-        gamma = 1e-5
-        r = []
-        for i in range(n):
-            temp = sqrt(gamma) * (x[i] - 1)
-            r.append(temp)
-        temp = sum(n * x[i] ** 2 for i in range(n)) - 0.25
-        r.append(temp)
-        return sum(item ** 2 for item in r)
+    gamma = 1e-5
 
-    x_sympy = symarray('x', n)
-    return fgG(penalty_i, x_sympy, **kwargs)
+    def f(x):
+        ret = sum((x-1)**2)*gamma
+        ret += sum((n*x**2 - 0.25))**2
+        return ret
+
+    def g(x):
+        return (2*gamma - n**2 + 4*n**2 * sum(x**2))*x - 2*gamma
+
+    def G(x):
+        ret = 8*n**2 * np.outer(x, x)
+        ret = ret.astype('float64')
+        ret += (4*n**2*x.dot(x)+2*gamma-n**2) * np.eye(n)
+        return ret
+    return f, g, G
 
 
 def trigonometric_numpy(**kwargs):
     # n = m
     m = kwargs['n']
+
     def trigonometric(x):
         r = []
         sum_cos = sum(cos(x[j]) for j in range(m))
@@ -200,6 +206,21 @@ def trigonometric_numpy(**kwargs):
 
     x_sympy = symarray('x', m)
     return fgG(trigonometric, x_sympy, **kwargs)
+
+
+def trigonometric_numpy_new(**kwargs):
+    n = kwargs['n']
+    def f(x):
+        ii = np.arange(1, n+1)
+        return sum((n - sum(np.cos(x)) + ii - ii*np.cos(x) - np.sin(x))**2)
+
+    def g(x):
+        sum(np.cos(x))
+        pass
+
+    def G(x):
+        pass
+    return f, g, G
 
 
 def extended_rosenbrock_numpy(**kwargs):
@@ -217,3 +238,15 @@ def extended_rosenbrock_numpy(**kwargs):
 
     x_sympy = symarray('x', m)
     return fgG(extended_rosenbrock, x_sympy, **kwargs)
+
+
+if __name__ == "__main__":
+    n = 10
+    f,g,G = trigonometric_numpy(n = n, func_name = 'foo')
+    # f1, g1, G1 = penalty_i_numpy(n=n, func_name='foo')
+    # f2, g2, G2 = penalty_i_numpy_new(n=n)
+    # for i in range(10):
+    #     x = np.random.randn(n)
+    #     for a, b in zip((f1, g1, G1), (f2, g2, G2)):
+    #         if not np.allclose(a(x), b(x)):
+    #             print("fuck")
