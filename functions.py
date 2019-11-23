@@ -1,7 +1,5 @@
-import os
 import numpy as np
-import dill
-from sympy import exp, symarray, sqrt, diff, cos, sin
+from sympy import diff
 from sympy.utilities.lambdify import lambdify
 
 
@@ -19,16 +17,6 @@ def fgG(f, x_sympy, **kwargs):
     -------
     返回f, g, G，分别是函数、函数的导数、函数的Hessian矩阵对应的数值函数。
     """
-#     dill.settings['recurse'] = True
-#     file_name = os.path.join("cache", kwargs['func_name'] + "_" + str(kwargs['n']))
-#     parent, _ = os.path.split(file_name)
-#     if not os.path.exists(parent):
-#         os.makedirs(parent)
-#     if os.path.isfile(file_name):
-#         print("=> 已加载缓存的函数 : " + file_name)
-#         with open(file_name, "rb") as fp:
-#             func_list = dill.load(fp)
-#         return func_list
 
     use_G = kwargs['use_G'] if 'use_G' in kwargs else True
     f_sympy = f(x_sympy)
@@ -40,9 +28,6 @@ def fgG(f, x_sympy, **kwargs):
     else:
         func_list = list(lambdify([x_sympy], func, 'numpy')
                          for func in (f_sympy, g_sympy))
-#     with open(file_name, "wb") as fp:
-#         dill.dump(func_list, fp)
-#         print("=> 缓存函数 : " + file_name)
     return func_list
 
 
@@ -149,27 +134,59 @@ class Evaluater:
 
 
 def extended_powell_singular_numpy(**kwargs):
-    """定义的Extended Powell Singular函数，m是其函数定义中的m
-    """
-    m = kwargs['n']
+    n = kwargs['n']
 
-    def extended_powell_singular(x):
-        r = []
-        for i in range(m):
-            if i % 4 == 0:  # 1
-                temp = x[i] + 10 * x[i + 1]
-            elif i % 4 == 1:  # 2
-                temp = sqrt(5) * (x[i + 1] - x[i + 2])
-            elif i % 4 == 2:  # 3
-                temp = (x[i - 1] - 2 * x[i]) ** 2
+    def f(x):
+        ret = 0
+        for i in range(n):
+            if i % 4 == 0:
+                ret += (x[i] + 10 * x[i + 1]) ** 2
+            elif i % 4 == 1:
+                ret += 5 * (x[i + 1] - x[i + 2]) ** 2
+            elif i % 4 == 2:
+                ret += (x[i - 1] - 2 * x[i]) ** 4
             else:
-                # elif i % 4 == 3:  # 0
-                temp = sqrt(10) * (x[i - 3] - x[i]) ** 2
-            r.append(temp)
-        return sum(item ** 2 for item in r)
+                ret += 10 * (x[i - 3] - x[i]) ** 4
+        return ret
 
-    x_sympy = symarray('x', m)
-    return fgG(extended_powell_singular, x_sympy, **kwargs)
+    def g(x):
+        ret = np.zeros(n)
+        for i in range(n):
+            if i % 4 == 0:
+                ret[i] = 2 * x[i] + 20 * x[i + 1] + 40 * (x[i] - x[i + 3]) ** 3
+            elif i % 4 == 1:
+                ret[i] = 20 * x[i - 1] + 200 * x[i] + 4 * (x[i] - 2 * x[i + 1]) ** 3
+            elif i % 4 == 2:
+                ret[i] = 10 * x[i] - 10 * x[i + 1] - 8 * (x[i - 1] - 2 * x[i]) ** 3
+            else:
+                ret[i] = -10 * x[i - 1] + 10 * x[i] - 40 * (x[i - 3] - x[i]) ** 3
+        return ret
+
+    def G(x):
+        ret = np.zeros((n, n))
+        for i in range(0, n, 4):
+            ret[i][i] = 120 * (x[i] - x[i + 3]) ** 2 + 2
+            ret[i][i + 1] = 20
+            ret[i][i + 2] = 0
+            ret[i][i + 3] = -120 * (x[i] - x[i + 3]) ** 2
+
+            ret[i + 1][i] = 20
+            ret[i + 1][i + 1] = 12 * (x[i + 1] - 2 * x[i + 2]) ** 2 + 200
+            ret[i + 1][i + 2] = -24 * (x[i + 1] - 2 * x[i + 2]) ** 2
+            ret[i + 1][i + 3] = 0
+
+            ret[i + 2][i] = 0
+            ret[i + 2][i + 1] = -24 * (x[i + 1] - 2 * x[i + 2]) ** 2
+            ret[i + 2][i + 2] = 48 * (x[i + 1] - 2 * x[i + 2]) ** 2 + 10
+            ret[i + 2][i + 3] = -10
+
+            ret[i + 3][i] = -120 * (x[i] - x[i + 3]) ** 2
+            ret[i + 3][i + 1] = 0
+            ret[i + 3][i + 2] = -10
+            ret[i + 3][i + 3] = 120 * (x[i] - x[i + 3]) ** 2 + 10
+        return ret
+
+    return f, g, G
 
 
 def penalty_i_numpy(**kwargs):
@@ -177,76 +194,78 @@ def penalty_i_numpy(**kwargs):
     gamma = 1e-5
 
     def f(x):
-        ret = sum((x-1)**2)*gamma
-        ret += sum((n*x**2 - 0.25))**2
+        ret = sum((x - 1) ** 2) * gamma
+        ret += sum((n * x ** 2 - 0.25)) ** 2
         return ret
 
     def g(x):
-        return (2*gamma - n**2 + 4*n**2 * sum(x**2))*x - 2*gamma
+        return (2 * gamma - n ** 2 + 4 * n ** 2 * sum(x ** 2)) * x - 2 * gamma
 
     def G(x):
-        ret = 8*n**2 * np.outer(x, x)
+        ret = 8 * n ** 2 * np.outer(x, x)
         ret = ret.astype('float64')
-        ret += (4*n**2*x.dot(x)+2*gamma-n**2) * np.eye(n)
+        ret += (4 * n ** 2 * x.dot(x) + 2 * gamma - n ** 2) * np.eye(n)
         return ret
+
     return f, g, G
 
 
 def trigonometric_numpy(**kwargs):
-    # n = m
-    m = kwargs['n']
-
-    def trigonometric(x):
-        r = []
-        sum_cos = sum(cos(x[j]) for j in range(m))
-        for i in range(m):
-            temp = m - sum_cos + (i+1) * (1 - cos(x[i])) - sin(x[i])
-            r.append(temp)
-        return sum(item ** 2 for item in r)
-
-    x_sympy = symarray('x', m)
-    return fgG(trigonometric, x_sympy, **kwargs)
-
-
-def trigonometric_numpy_new(**kwargs):
     n = kwargs['n']
+
     def f(x):
-        ii = np.arange(1, n+1)
-        return sum((n - sum(np.cos(x)) + ii - ii*np.cos(x) - np.sin(x))**2)
+        ii = np.arange(1, n + 1)
+        return sum((n - sum(np.cos(x)) + ii - ii * np.cos(x) - np.sin(x)) ** 2)
 
     def g(x):
-        sum(np.cos(x))
-        pass
+        ii = np.arange(1, n + 1)
+        rhs = ii * (1 - np.cos(x)) + n - np.sin(x) - sum(np.cos(x))
+        lhs = np.tile(2 * np.sin(x), (n, 1)).T
+        lhs = lhs + np.diag(2 * ii * np.sin(x) - 2 * np.cos(x))
+        return lhs.dot(rhs)
 
     def G(x):
-        pass
+        ii = np.arange(1, n + 1)
+        lhs1 = np.tile(2 * np.sin(x), (n, 1)).T
+        lhs1 = lhs1 + np.diag(2 * ii * np.sin(x) - 2 * np.cos(x))
+        rhs1 = np.tile(np.sin(x), (n, 1)) + np.diag(ii * np.sin(x) - np.cos(x))
+
+        lhs2 = np.tile(2 * np.cos(x), (n, 1)).T
+        lhs2 = lhs2 + np.diag(2 * ii * np.cos(x) + 2 * np.sin(x))
+        rhs2 = ii * (1 - np.cos(x)) + n - np.sin(x) - sum(np.cos(x))
+        res = lhs2.dot(rhs2)
+        return lhs1.dot(rhs1) + np.diag(res)
+
     return f, g, G
 
 
 def extended_rosenbrock_numpy(**kwargs):
-    # n = m
-    m = kwargs['n']
-    assert (m & 1) == 0
+    n = kwargs['n']
 
-    def extended_rosenbrock(x):
-        r = []
-        idxs = list(range(m))
-        for i, j in zip(idxs[0::2], idxs[1::2]):
-            r.append(10 * (x[i + 1] - x[i] ** 2))
-            r.append(1 - x[j - 1])
-        return sum(item ** 2 for item in r)
+    def f(x):
+        ret = 0
+        idxs = list(range(n))
+        for i in idxs[::2]:
+            ret += (10 * (x[i + 1] - x[i] ** 2)) ** 2
+            ret += (1 - x[i]) ** 2
+        return ret
 
-    x_sympy = symarray('x', m)
-    return fgG(extended_rosenbrock, x_sympy, **kwargs)
+    def g(x):
+        idxs = list(range(n))
+        ret = np.zeros(n)
+        for i in idxs[::2]:
+            ret[i] = 400 * x[i] * (x[i] ** 2 - x[i + 1]) + 2 * x[i] - 2
+            ret[i + 1] = -200 * x[i] ** 2 + 200 * x[i + 1]
+        return ret
 
+    def G(x):
+        idxs = list(range(n))
+        ret = np.zeros((n, n))
+        for i in idxs[::2]:
+            ret[i][i] = 1200 * x[i] ** 2 - 400 * x[i + 1] + 2
+            ret[i][i + 1] = -400 * x[i]
+            ret[i + 1][i] = -400 * x[i]
+            ret[i + 1][i + 1] = 200
+        return ret
 
-if __name__ == "__main__":
-    n = 10
-    f,g,G = trigonometric_numpy(n = n, func_name = 'foo')
-    # f1, g1, G1 = penalty_i_numpy(n=n, func_name='foo')
-    # f2, g2, G2 = penalty_i_numpy_new(n=n)
-    # for i in range(10):
-    #     x = np.random.randn(n)
-    #     for a, b in zip((f1, g1, G1), (f2, g2, G2)):
-    #         if not np.allclose(a(x), b(x)):
-    #             print("fuck")
+    return f, g, G

@@ -59,7 +59,7 @@ def inexact_newton(func, init, choice, **kwargs):
         init = init + d_k
         g_prev = g
         G_prev = G
-        if la.norm(d_k) == 0:
+        if la.norm(d_k) < 1e-15:
             break
         bar.desc = '函数值:'+str(f)
         bar.update()
