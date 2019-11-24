@@ -129,7 +129,7 @@ class Evaluater:
         """
         调用work函数
         """
-        x = np.array(x)
+        x = np.array(x).astype('float')
         return self.work(x, g_only)
 
 
@@ -203,7 +203,6 @@ def penalty_i_numpy(**kwargs):
 
     def G(x):
         ret = 8 * n ** 2 * np.outer(x, x)
-        ret = ret.astype('float64')
         ret += (4 * n ** 2 * x.dot(x) + 2 * gamma - n ** 2) * np.eye(n)
         return ret
 
