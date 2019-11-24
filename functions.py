@@ -55,6 +55,45 @@ def call_counter(count=True):
     return _call_counter
 
 
+class Phi_func:
+    def __init__(self, func, x0, d, use_G=False):
+        """根据f,x0,d构造函数phi
+            phi(alpha) = f(x0 + alpha * d)
+
+        Parameters
+        ----------
+        func : 目标函数
+        x0 : 初始点
+        d : 下降方向
+        use_G : bool, optional
+            是否需要phi函数返回Hessian矩阵
+        """
+        self.func = func
+        self.x0 = x0
+        self.d = d
+        self.use_G = use_G
+
+    def __call__(self, alpha):
+        """给定alpha，返回对应的函数值、导数以及Hessian矩阵
+
+        Parameters
+        ----------
+        alpha : float
+            phi函数中的alpha
+
+        Returns
+        -------
+        返回函数值、导数以及对应的Hessian矩阵
+        """
+        d = self.d
+        if not self.use_G:
+            f, g, *_ = self.func(self.x0 + alpha * d)
+            return f, g.dot(d)
+        else:
+            f, g, G = self.func(self.x0 + alpha * d)
+            return f, g.dot(d), G
+
+
 class Evaluater:
     def __init__(self, func_name, **kwargs):
         """代值计算函数，给定函数名，返回一个可以代入求值的具体函数
@@ -66,7 +105,7 @@ class Evaluater:
         """
         kwargs['func_name'] = func_name
         n = kwargs['n']
-        if func_name == 'extended_powell_singular':
+        if func_name in ['extended_powell_singular', "eps"]:
             func_list = extended_powell_singular_numpy(**kwargs)
             init = []
             for i in range(n):
@@ -78,13 +117,13 @@ class Evaluater:
                     init.append(0)
                 else:
                     init.append(1)
-        elif func_name == "penalty_i":
+        elif func_name in ["penalty_i", "pi"]:
             func_list = penalty_i_numpy(**kwargs)
             init = [i + 1 for i in range(n)]
-        elif func_name == "trigonometric":
+        elif func_name in ["trigonometric", "tri"]:
             func_list = trigonometric_numpy(**kwargs)
             init = list(1 / n for i in range(n))
-        elif func_name == "extended_rosenbrock":
+        elif func_name in ["extended_rosenbrock", "er"]:
             func_list = extended_rosenbrock_numpy(**kwargs)
             init = []
             for i in range(n // 2):

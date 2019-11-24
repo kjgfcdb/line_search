@@ -18,6 +18,7 @@ LINE_SEARCH_METHODS = {
 
 SOLVERS = {
     "inexact_newton": inexact_newton,
+    "in": inexact_newton,
     "lbfgs": l_bfgs,
     "clbfgs": compact_l_bfgs
 }
@@ -80,4 +81,5 @@ if __name__ == '__main__':
     # np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
     #
     # main(func_name, solver_name, count=count, eps=eps)
-    main("penalty_i", "inexact_newton", choice='1', n=10)
+    main("pi", "in", choice='1', n=1000)
+    # main("pi", "clbfgs", n=100, m=20)

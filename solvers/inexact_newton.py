@@ -5,6 +5,8 @@ import numpy.linalg as la
 from scipy.optimize import fminbound
 from scipy.sparse.linalg import gmres
 from tqdm import tqdm
+from functions import Phi_func
+from step_size import armijo_goldstein_linesearch
 
 
 def get_theta(g_k, d_k, g_one, G, theta_min, theta_max):
@@ -18,12 +20,14 @@ def get_theta(g_k, d_k, g_one, G, theta_min, theta_max):
     return fminbound(temp_func, theta_min, theta_max)
 
 
-def inexact_newton(func, init, choice, **kwargs):
+def inexact_newton(func, init, **kwargs):
     eta_max = kwargs['eta_max'] if 'eta_max' in kwargs else 0.9
     t = kwargs['t'] if 't' in kwargs else 1e-4
     theta_min = kwargs['theta_min'] if 'theta_min' in kwargs else 0.1
     theta_max = kwargs['theta_max'] if 'theta_max' in kwargs else 0.5
     eps = kwargs['eps'] if 'eps' in kwargs else 1e-5
+    assert 'choice' in kwargs, "必须选择一种非精确牛顿法的策略！"
+    choice = kwargs['choice']
 
     g_prev = None
     G_prev = None
@@ -56,11 +60,13 @@ def inexact_newton(func, init, choice, **kwargs):
             d_k = theta * d_k
             eta_k = 1 - theta * (1 - eta_k)
 
-        init = init + d_k
+        phi = Phi_func(func, init, d_k)
+        alpha = armijo_goldstein_linesearch(phi, safe_guard=200)
+        init = init + d_k * alpha
         g_prev = g
         G_prev = G
         if la.norm(d_k) < 1e-15:
             break
-        bar.desc = '函数值:'+str(f)
+        bar.desc = '函数值:' + str(f)
         bar.update()
     return init, f
