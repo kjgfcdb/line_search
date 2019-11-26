@@ -53,6 +53,8 @@ def l_bfgs(func, init, **kwargs):
         init = init + alpha * d
         bar.desc = '函数值:' + str(f)
         bar.update()
+    bar.close()
+    l_bfgs.iters = bar.n
     return init, f
 
 
@@ -135,4 +137,6 @@ def compact_l_bfgs(func, init, **kwargs):
 
         bar.desc = '函数值:' + str(f)
         bar.update()
+    bar.close()
+    compact_l_bfgs.iters = bar.n
     return init, f

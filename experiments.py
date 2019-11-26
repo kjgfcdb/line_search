@@ -39,6 +39,8 @@ def main(func_name, solver_name, **kwargs):
     solver = SOLVERS[solver_name]
     x, f = solver(func, init, **kwargs)
     print("x: {}\tf: {}".format(repr(x), f))
+    print("\n迭代次数\t", solver.iters, "次")
+    print("函数调用次数\t", func.func_calls, "次")
 
 
 if __name__ == '__main__':
@@ -81,5 +83,5 @@ if __name__ == '__main__':
     # np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
     #
     # main(func_name, solver_name, count=count, eps=eps)
-    main("pi", "in", choice='1', n=1000)
-    # main("pi", "clbfgs", n=100, m=20)
+    main("er", "in", choice='1', n=1000)
+    # main("pi", "clbfgs", n=1000, m=20)

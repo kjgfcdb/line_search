@@ -31,30 +31,6 @@ def fgG(f, x_sympy, **kwargs):
     return func_list
 
 
-def call_counter(count=True):
-    """对调用的函数统计其调用次数
-
-    Parameters
-    ----------
-    count : bool, optional
-        是否输出调用次数结果, by default True
-    """
-
-    def _call_counter(func):
-        num = 0
-
-        def wrapper(*args, **kwargs):
-            nonlocal num
-            num += 1
-            if count:
-                print(f"===== call {num} =====")
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return _call_counter
-
-
 class Phi_func:
     def __init__(self, func, x0, d, use_G=False):
         """根据f,x0,d构造函数phi
@@ -131,20 +107,13 @@ class Evaluater:
                 init.append(1)
         else:
             raise NotImplementedError()
-        use_G = kwargs['use_G'] if 'use_G' in kwargs else True
-        if use_G:
-            f, g, G = func_list
-            self.G = G
-        else:
-            f, g = func_list
-            self.G = None
-        self.f = f
-        self.g = g
-        self.init = init
-        count = kwargs['count'] if 'count' in kwargs else False
-        self.work = call_counter(count)(self.work)
 
-    def work(self, x, g_only):
+        self.f, self.g, self.G = func_list
+
+        self.init = init
+        self.func_calls = 0
+
+    def __call__(self, x, g_only=False):
         """根据输入变量返回得到函数值、导数值、以及Hessian矩阵
 
         Parameters
@@ -156,20 +125,12 @@ class Evaluater:
         -------
         返回f,g,G，分别是函数值、导数、Hessian矩阵
         """
+        self.func_calls += 1
+        x = np.array(x).astype('float')
         if g_only:
             return np.array(self.g(x))
-        f, g = (np.array(func(x)) for func in (self.f, self.g))
-        if self.G is not None:
-            return f, g, np.array(self.G(x))
-        else:
-            return f, g
-
-    def __call__(self, x, g_only=False):
-        """
-        调用work函数
-        """
-        x = np.array(x).astype('float')
-        return self.work(x, g_only)
+        f, g, G = (np.array(func(x)) for func in (self.f, self.g, self.G))
+        return f,g,G
 
 
 def extended_powell_singular_numpy(**kwargs):

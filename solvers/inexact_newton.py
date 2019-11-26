@@ -31,9 +31,12 @@ def inexact_newton(func, init, **kwargs):
 
     g_prev = None
     G_prev = None
+    f_prev = None
     bar = tqdm()
     while True:
         f, g, G = func(init)
+        # if f_prev is not None and f > f_prev:
+        #     break
         if la.norm(g) < eps * max(1, la.norm(init)):
             break
         if choice == '1':
@@ -43,30 +46,34 @@ def inexact_newton(func, init, **kwargs):
                 eta_k = np.abs(la.norm(g) - la.norm(g_prev +
                                                     G_prev.dot(d_k))) / la.norm(g_prev)
         elif choice == '2':
-            gamma = kwargs['gamma'] if 'gamma' in kwargs else 0.5
-            alpha = kwargs['alpha'] if 'alpha' in kwargs else 1.5
+            gamma = kwargs['gamma'] if 'gamma' in kwargs else 1
+            alpha = kwargs['alpha'] if 'alpha' in kwargs else 2
             if g_prev is None:
                 eta_k = 0.5
             else:
+                eta_k_old = eta_k
                 eta_k = gamma * (la.norm(g) / la.norm(g_prev)) ** alpha
+                if gamma * eta_k_old**alpha > 0.1:
+                    eta_k = max(eta_k, eta_k_old)
         else:
             raise NotImplementedError()
         eta_k = min(eta_k, eta_max)
-        d_k, exit_code = gmres(G, (eta_k - 1) * g, restart=20)
+        d_k, exit_code = gmres(G,  -g, restart=20, tol=eta_k, maxiter=10)
 
-        while la.norm(func(init + d_k, g_only=True)) > (1 - t * (1 - eta_k)) * la.norm(g):
-            g_one = func(init + d_k, g_only=True)
-            theta = get_theta(g, d_k, g_one, G, theta_min, theta_max)
-            d_k = theta * d_k
-            eta_k = 1 - theta * (1 - eta_k)
+        # while la.norm(func(init + d_k, g_only=True)) > (1 - t * (1 - eta_k)) * la.norm(g):
+        #     g_one = func(init + d_k, g_only=True)
+        #     theta = get_theta(g, d_k, g_one, G, theta_min, theta_max)
+        #     d_k = theta * d_k
+        #     eta_k = 1 - theta * (1 - eta_k)
 
         phi = Phi_func(func, init, d_k)
-        alpha = armijo_goldstein_linesearch(phi, safe_guard=200)
+        alpha = armijo_goldstein_linesearch(phi, safe_guard=20)
         init = init + d_k * alpha
         g_prev = g
         G_prev = G
-        if la.norm(d_k) < 1e-15:
-            break
+        f_prev = f
         bar.desc = '函数值:' + str(f)
         bar.update()
+    bar.close()
+    inexact_newton.iters = bar.n
     return init, f
