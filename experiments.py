@@ -38,50 +38,50 @@ def main(func_name, solver_name, **kwargs):
     init = func.init
     solver = SOLVERS[solver_name]
     x, f = solver(func, init, **kwargs)
-    print("x: {}\tf: {}".format(repr(x), f))
+    print("x: {}\tf: {}".format(repr(x), repr(f)))
     print("\n迭代次数\t", solver.iters, "次")
     print("函数调用次数\t", func.func_calls, "次")
 
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser(description="Optimization experiments")
-    # parser.add_argument(
-    #     "-func",
-    #     type=str,
-    #     help="The function you want to optimize",
-    #     default="powell_badly_scaled"
-    # )
-    # parser.add_argument(
-    #     "-solver",
-    #     type=str,
-    #     help="The solver that solves this optimization problem",
-    #     default="damp_newton"
-    # )
-    # parser.add_argument(
-    #     "-n",
-    #     type=int,
-    #     default=-1,
-    # )
-    # parser.add_argument(
-    #     "-eps",
-    #     type=float,
-    #     default=1e-8
-    # )
-    # parser.add_argument(
-    #     "-count",
-    #     dest='count',
-    #     action='store_true'
-    # )
-    # parser.set_defaults(count=False)
-    # args = parser.parse_args()
-    # func_name = args.func
-    # solver_name = args.solver
-    # count = args.count
-    # eps = args.eps
-    #
-    # print(args)
-    # np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
-    #
-    # main(func_name, solver_name, count=count, eps=eps)
-    # main("eps", "in", choice='2', n=1000)
+    parser = argparse.ArgumentParser(description="Optimization experiments")
+    parser.add_argument(
+        "-func",
+        type=str,
+        help="The function you want to optimize",
+        default="powell_badly_scaled"
+    )
+    parser.add_argument(
+        "-solver",
+        type=str,
+        help="The solver that solves this optimization problem",
+        default="damp_newton"
+    )
+    parser.add_argument(
+        "-n",
+        type=int,
+        default=1000,
+    )
+    parser.add_argument(
+        "-m",
+        type=int,
+        default=4,
+    )
+    parser.add_argument(
+        "-c",
+        type=int,
+        default=1
+    )
+    args = parser.parse_args()
+    func_name = args.func
+    solver_name = args.solver
+    n = args.n
+    m = args.m
+    choice = args.c
+    
+    print(args)
+    np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
+    
+    main(func_name, solver_name, n=n, m=m, choice=choice)
+    # main("er", "in", choice='2', n=1000)
     # main("pi", "clbfgs", n=1000, m=20)
