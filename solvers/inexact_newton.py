@@ -47,18 +47,19 @@ def inexact_newton(func, init, **kwargs):
                                                     G_prev.dot(d_k))) / la.norm(g_prev)
         elif choice == '2':
             gamma = kwargs['gamma'] if 'gamma' in kwargs else 1
-            alpha = kwargs['alpha'] if 'alpha' in kwargs else 2
+            alpha = kwargs['alpha'] if 'alpha' in kwargs else (1+np.sqrt(5))/2
             if g_prev is None:
                 eta_k = 0.5
             else:
                 eta_k_old = eta_k
                 eta_k = gamma * (la.norm(g) / la.norm(g_prev)) ** alpha
                 if gamma * eta_k_old**alpha > 0.1:
-                    eta_k = max(eta_k, eta_k_old)
+                    eta_k = max(eta_k, gamma * eta_k_old ** alpha)
         else:
             raise NotImplementedError()
         eta_k = min(eta_k, eta_max)
-        d_k, exit_code = gmres(G,  -g, restart=20, tol=eta_k, maxiter=10)
+        # d_k, exit_code = gmres(G,  -g, restart=20, tol=eta_k, maxiter=10)
+        d_k, exit_code = gmres(G,  (eta_k-1)*g, maxiter=10, restart=20)
 
         # while la.norm(func(init + d_k, g_only=True)) > (1 - t * (1 - eta_k)) * la.norm(g):
         #     g_one = func(init + d_k, g_only=True)
