@@ -1,20 +1,11 @@
 import argparse
 
 import numpy as np
-from stackprinter import set_excepthook
 
 from functions import Evaluater
 from solvers import inexact_newton, l_bfgs, compact_l_bfgs
-from step_size import armijo_goldstein_linesearch, wolfe_powell_linesearch, gll_linesearch, simple_linesearch
+from step_size import armijo_goldstein_linesearch, wolfe_powell_linesearch
 
-set_excepthook(style='darkbg2')
-
-LINE_SEARCH_METHODS = {
-    "armijo_goldstein": armijo_goldstein_linesearch,
-    "wolfe_powell": wolfe_powell_linesearch,
-    "gll": gll_linesearch,
-    "simple": simple_linesearch
-}
 
 SOLVERS = {
     "inexact_newton": inexact_newton,
@@ -78,10 +69,10 @@ if __name__ == '__main__':
     n = args.n
     m = args.m
     choice = args.c
-    
+
     print(args)
     np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
-    
+
     main(func_name, solver_name, n=n, m=m, choice=choice)
     # main("er", "in", choice='2', n=1000)
     # main("pi", "clbfgs", n=1000, m=20)

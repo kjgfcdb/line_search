@@ -1,8 +1,11 @@
 import os
 
 
-for func in ('powell_badly_scaled', 'extended_powell_singular', 'biggs_exp6'):
-    for solver in ('damp_newton', 'stable_newton', 'fletcher_freeman'):
-        for ls in ('armijo_goldstein', 'wolfe_powell', 'gll'):
-            cmd = f'python experiments.py -s {solver} -l {ls} -f {func} -c'
+for func in ('tri', 'eps', 'er', 'pi'):
+    for solver in ('lbfgs', 'clbfgs'):
+        for m in [5, 9, 15]:
+            cmd = f'python experiments.py -f {func} -s {solver} -n 1000 -m {m}'
             os.system(cmd)
+    for c in [1, 2]:
+        cmd = f'python experiments.py -f {func} -s "in" -n 1000 -c {c}'
+        os.system(cmd)
