@@ -79,4 +79,4 @@ def inexact_newton(func, init, **kwargs):
         bar.update()
     bar.close()
     inexact_newton.iters = bar.n
-    return init, f
+    return init, f, g
