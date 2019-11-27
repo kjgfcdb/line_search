@@ -79,4 +79,5 @@ def inexact_newton(func, init, **kwargs):
         bar.update()
     bar.close()
     inexact_newton.iters = bar.n
+    inexact_newton.time = bar.last_print_t - bar.start_t
     return init, f, g

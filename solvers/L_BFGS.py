@@ -55,6 +55,7 @@ def l_bfgs(func, init, **kwargs):
         bar.update()
     bar.close()
     l_bfgs.iters = bar.n
+    l_bfgs.time = bar.last_print_t - bar.start_t
     return init, f, g
 
 
@@ -139,4 +140,5 @@ def compact_l_bfgs(func, init, **kwargs):
         bar.update()
     bar.close()
     compact_l_bfgs.iters = bar.n
+    compact_l_bfgs.time = bar.last_print_t - bar.start_t
     return init, f, g

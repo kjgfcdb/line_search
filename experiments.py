@@ -36,12 +36,13 @@ def main(func_name, solver_name, **kwargs):
     # print("x_norm: {}\t x_mean: {}\t f: {}\t g_norm: {}".format(repr(x_norm), repr(x_mean), f, ))
     # print("\n迭代次数\t", solver.iters, "次")
     # print("函数调用次数\t", func.func_calls, "次")
-    print(repr(x_norm))
-    print(repr(x_mean))
-    print(f)
-    print(repr(g_norm))
+    print("%.4g" % x_norm)
+    print("%.4g" % x_mean)
+    print("%.4g" % f)
+    print("%.4g" % g_norm)
     print(solver.iters)
     print(func.func_calls)
+    print("%.4g" % solver.time)
 
 
 if __name__ == '__main__':
@@ -81,7 +82,6 @@ if __name__ == '__main__':
     choice = args.c
 
     # print(args)
-    np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
 
     main(func_name, solver_name, n=n, m=m, choice=choice)
     # main("er", "in", choice='2', n=1000)
