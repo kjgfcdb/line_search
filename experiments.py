@@ -1,6 +1,7 @@
 import argparse
 
 import numpy as np
+import numpy.linalg as la
 
 from functions import Evaluater
 from solvers import inexact_newton, l_bfgs, compact_l_bfgs
@@ -28,10 +29,19 @@ def main(func_name, solver_name, **kwargs):
     func = Evaluater(func_name, **kwargs)
     init = func.init
     solver = SOLVERS[solver_name]
-    x, f = solver(func, init, **kwargs)
-    print("x: {}\tf: {}".format(repr(x), repr(f)))
-    print("\n迭代次数\t", solver.iters, "次")
-    print("函数调用次数\t", func.func_calls, "次")
+    x, f, g = solver(func, init, **kwargs)
+    x_norm = la.norm(x)
+    x_mean = x.mean()
+    g_norm = la.norm(g)
+    # print("x_norm: {}\t x_mean: {}\t f: {}\t g_norm: {}".format(repr(x_norm), repr(x_mean), f, ))
+    # print("\n迭代次数\t", solver.iters, "次")
+    # print("函数调用次数\t", func.func_calls, "次")
+    print(repr(x_norm))
+    print(repr(x_mean))
+    print(f)
+    print(repr(g_norm))
+    print(solver.iters)
+    print(func.func_calls)
 
 
 if __name__ == '__main__':
@@ -70,7 +80,7 @@ if __name__ == '__main__':
     m = args.m
     choice = args.c
 
-    print(args)
+    # print(args)
     np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
 
     main(func_name, solver_name, n=n, m=m, choice=choice)
