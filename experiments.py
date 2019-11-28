@@ -28,7 +28,7 @@ def main(func_name, solver_name, **kwargs):
     func = Evaluater(func_name, **kwargs)
     init = func.init
     solver = SOLVERS[solver_name]
-    x, f = solver(func, init, **kwargs)
+    x, f, g = solver(func, init, **kwargs)
     print("x: {}\tf: {}".format(repr(x), repr(f)))
     print("\n迭代次数\t", solver.iters, "次")
     print("函数调用次数\t", func.func_calls, "次")
@@ -45,8 +45,7 @@ if __name__ == '__main__':
     parser.add_argument(
         "-solver",
         type=str,
-        help="The solver that solves this optimization problem",
-        default="damp_newton"
+        help="The solver that solves this optimization problem"
     )
     parser.add_argument(
         "-n",
@@ -74,5 +73,5 @@ if __name__ == '__main__':
     np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
 
     main(func_name, solver_name, n=n, m=m, choice=choice)
-    # main("er", "in", choice='2', n=1000)
+    # main("er", "in", choice=2, n=1000)
     # main("pi", "clbfgs", n=1000, m=20)
