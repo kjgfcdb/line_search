@@ -130,7 +130,7 @@ class Evaluater:
         if g_only:
             return np.array(self.g(x))
         f, g, G = (np.array(func(x)) for func in (self.f, self.g, self.G))
-        return f,g,G
+        return f, g, G
 
 
 def extended_powell_singular_numpy(**kwargs):
@@ -195,15 +195,15 @@ def penalty_i_numpy(**kwargs):
 
     def f(x):
         ret = sum((x - 1) ** 2) * gamma
-        ret += sum((n * x ** 2 - 0.25)) ** 2
+        ret += (sum(x ** 2) - 0.25) ** 2
         return ret
 
     def g(x):
-        return (2 * gamma - n ** 2 + 4 * n ** 2 * sum(x ** 2)) * x - 2 * gamma
+        return (4 * sum(x**2) - 1 + 2*gamma)*x - 2*gamma
 
     def G(x):
-        ret = 8 * n ** 2 * np.outer(x, x)
-        ret += (4 * n ** 2 * x.dot(x) + 2 * gamma - n ** 2) * np.eye(n)
+        ret = 8 * np.outer(x, x)
+        ret += (4 * x.dot(x) + 2 * gamma - 1) * np.eye(n)
         return ret
 
     return f, g, G

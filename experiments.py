@@ -29,7 +29,7 @@ def main(func_name, solver_name, **kwargs):
     init = func.init
     solver = SOLVERS[solver_name]
     x, f, g = solver(func, init, **kwargs)
-    print("x: {}\tf: {}".format(repr(x), repr(f)))
+    print("x: {}\tf: {}".format(repr(x), f))
     print("\n迭代次数\t", solver.iters, "次")
     print("函数调用次数\t", func.func_calls, "次")
 
