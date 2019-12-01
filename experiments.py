@@ -29,8 +29,8 @@ def main(func_name, solver_name, **kwargs):
     init = func.init
     solver = SOLVERS[solver_name]
     x, f, g = solver(func, init, **kwargs)
-    print("x: {}\tf: {}".format(repr(x), f))
-    print("\n迭代次数\t", solver.iters, "次")
+    print("\n最优解x^*: {}\n函数值f: {}".format(repr(x), f))
+    print("迭代次数\t", solver.iters, "次")
     print("函数调用次数\t", func.func_calls, "次")
 
 
@@ -70,8 +70,6 @@ if __name__ == '__main__':
     choice = args.c
 
     print(args)
-    np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
+    np.set_printoptions(precision=4, threshold=50, suppress=True)  # 设置浮点精度
 
-    # main(func_name, solver_name, n=n, m=m, choice=choice)
-    # main("er", "in", choice=2, n=1000)
-    main("tri", "lbfgs", n=5000, m=9)
+    main(func_name, solver_name, n=n, m=m, choice=choice)
