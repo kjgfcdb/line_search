@@ -62,12 +62,8 @@ class Phi_func:
         返回函数值、导数以及对应的Hessian矩阵
         """
         d = self.d
-        if not self.use_G:
-            f, g, *_ = self.func(self.x0 + alpha * d)
-            return f, g.dot(d)
-        else:
-            f, g, G = self.func(self.x0 + alpha * d)
-            return f, g.dot(d), G
+        f, g = self.func(self.x0 + alpha * d, use_G=False)
+        return f, g.dot(d)
 
 
 class Evaluater:
@@ -113,7 +109,7 @@ class Evaluater:
         self.init = init
         self.func_calls = 0
 
-    def __call__(self, x, g_only=False):
+    def __call__(self, x, g_only=False, use_G=True):
         """根据输入变量返回得到函数值、导数值、以及Hessian矩阵
 
         Parameters
@@ -129,6 +125,9 @@ class Evaluater:
         x = np.array(x).astype('float')
         if g_only:
             return np.array(self.g(x))
+        if not use_G:
+            f, g = (np.array(func(x)) for func in (self.f, self.g))
+            return f, g
         f, g, G = (np.array(func(x)) for func in (self.f, self.g, self.G))
         return f, g, G
 

@@ -72,6 +72,6 @@ if __name__ == '__main__':
     print(args)
     np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
 
-    main(func_name, solver_name, n=n, m=m, choice=choice)
+    # main(func_name, solver_name, n=n, m=m, choice=choice)
     # main("er", "in", choice=2, n=1000)
-    # main("pi", "clbfgs", n=1000, m=20)
+    main("tri", "lbfgs", n=5000, m=9)

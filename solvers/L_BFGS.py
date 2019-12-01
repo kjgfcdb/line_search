@@ -46,7 +46,7 @@ def l_bfgs(func, init, **kwargs):
         d = -r
 
         phi = Phi_func(func, init, d)
-        alpha = armijo_goldstein_linesearch(phi, safe_guard=100)
+        alpha = armijo_goldstein_linesearch(phi, safe_guard=20)
 
         g_prev = g
         init_prev = init.copy()
@@ -76,7 +76,7 @@ def compact_l_bfgs(func, init, **kwargs):
         H0 = np.eye(G.shape[0])
         d = -l_bfgs_two_loop(hist, H0, g)
         phi = Phi_func(func, init, d)
-        alpha = armijo_goldstein_linesearch(phi, safe_guard=100)
+        alpha = armijo_goldstein_linesearch(phi, safe_guard=20)
         g_prev = g
         init_prev = init.copy()
         init = init + alpha * d
@@ -130,7 +130,7 @@ def compact_l_bfgs(func, init, **kwargs):
         d = -r
 
         phi = Phi_func(func, init, d)
-        alpha = armijo_goldstein_linesearch(phi, safe_guard=100)
+        alpha = armijo_goldstein_linesearch(phi, safe_guard=20)
         g_prev = g
         init_prev = init.copy()
         init = init + alpha * d
