@@ -42,7 +42,7 @@ def main(func_name, solver_name, **kwargs):
     print("%.4g" % g_norm)
     print(solver.iters)
     print(func.func_calls)
-    print("%.4g" % solver.time)
+    print("%.2f" % solver.time)
 
 
 if __name__ == '__main__':
@@ -56,8 +56,7 @@ if __name__ == '__main__':
     parser.add_argument(
         "-solver",
         type=str,
-        help="The solver that solves this optimization problem",
-        default="damp_newton"
+        help="The solver that solves this optimization problem"
     )
     parser.add_argument(
         "-n",

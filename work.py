@@ -16,17 +16,23 @@ def collect(cmd, prefix):
 
 for func in ('tri', 'eps', 'er', 'pi'):
     print(func)
-    for solver in ('lbfgs', 'clbfgs'):
-        for m in [5, 9, 15]:
-            cmd = f'python experiments.py -f {func} -s {solver} -n 1000 -m {m}'
-            prefix = solver + "_" + str(m)
+    if func == 'eps':
+        sizes = [100, 1000, 5000, 10000]
+    else:
+        sizes = [1000, 5000, 10000]
+    for size in sizes:
+        print(size)
+        for solver in ('lbfgs', 'clbfgs'):
+            for m in [5, 9, 15]:
+                cmd = f'python experiments.py -f {func} -s {solver} -n {size} -m {m}'
+                prefix = solver.upper() + "\\_" + str(m)
+                buffer = collect(cmd, prefix)
+                print(buffer)
+        for c in [1, 2]:
+            cmd = f'python experiments.py -f {func} -s "in" -n {size} -c {c}'
+            prefix = "IN\\_" + str(c)
             buffer = collect(cmd, prefix)
             print(buffer)
-    for c in [1, 2]:
-        cmd = f'python experiments.py -f {func} -s "in" -n 1000 -c {c}'
-        prefix = solver + "_" + str(c)
-        buffer = collect(cmd, prefix)
-        print(buffer)
-    
-    print()
-    print()
+
+        print()
+        print()
