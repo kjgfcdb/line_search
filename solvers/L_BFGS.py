@@ -8,6 +8,22 @@ from functions import Phi_func
 
 
 def l_bfgs_two_loop(hist, H0, g):
+    """LBFGS内部的两次循环，用于计算H_k * g
+    
+    Parameters
+    ----------
+    hist : deque
+        历史信息队列
+    H0 : np.ndarray
+        初始Hessian矩阵，需要为正定
+    g : np.ndarray
+        梯度向量
+    
+    Returns
+    -------
+    r : np.ndarray
+        返回H_k * g的结果
+    """
     q = g
     alpha_list = []
     for s, y, rho in reversed(hist):
@@ -23,6 +39,24 @@ def l_bfgs_two_loop(hist, H0, g):
 
 
 def l_bfgs(func, init, **kwargs):
+    """用LBFGS求解优化问题
+    
+    Parameters
+    ----------
+    func : Evaluater
+        函数对象，可以通过调用返回函数值、梯度、Hessian矩阵
+    init : list
+        初始点坐标
+    
+    Returns
+    -------
+    init: np.ndarray
+        最优解
+    f: float
+        最优解对应的函数值
+    g: np.ndarray
+        最优解对应的梯度
+    """
     assert 'm' in kwargs, "必须指定LBFGS方法的队列长度！"
     m = kwargs['m']
     hist = deque(maxlen=m)
@@ -59,6 +93,24 @@ def l_bfgs(func, init, **kwargs):
 
 
 def compact_l_bfgs(func, init, **kwargs):
+    """用压缩LBFGS求解优化问题
+    
+    Parameters
+    ----------
+    func : Evaluater
+        函数对象，可以通过调用返回函数值、梯度、Hessian矩阵
+    init : list
+        初始点坐标
+    
+    Returns
+    -------
+    init: np.ndarray
+        最优解
+    f: float
+        最优解对应的函数值
+    g: np.ndarray
+        最优解对应的梯度
+    """
     assert 'm' in kwargs, "必须指定Compact LBFGS方法的队列长度！"
     m = kwargs['m']
     hist = deque(maxlen=m)

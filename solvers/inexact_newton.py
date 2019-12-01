@@ -9,18 +9,30 @@ from functions import Phi_func
 from step_size import armijo_goldstein_linesearch
 
 
-def get_theta(g_k, d_k, g_one, G, theta_min, theta_max):
-    c = g_k.dot(g_k)
-    # b = 2 * g_k.dot(d_k)
-    b = 2 * d_k.dot(G).dot(g_k)
-    a = g_one.dot(g_one) - b - c
-
-    def temp_func(x): return a * x ** 2 + b * x + c
-
-    return fminbound(temp_func, theta_min, theta_max)
-
-
 def inexact_newton(func, init, **kwargs):
+    """用非精确牛顿法求解优化问题
+    
+    Parameters
+    ----------
+    func : Evaluater
+        函数对象，可以通过调用返回函数值、梯度、Hessian矩阵
+    init : list
+        初始点坐标
+    
+    Returns
+    -------
+    init: np.ndarray
+        最优解
+    f: float
+        最优解对应的函数值
+    g: np.ndarray
+        最优解对应的梯度
+    
+    Raises
+    ------
+    NotImplementedError
+        如果选择的choice不是1或者2，那么报错
+    """
     eta_max = kwargs['eta_max'] if 'eta_max' in kwargs else 0.9
     t = kwargs['t'] if 't' in kwargs else 1e-4
     theta_min = kwargs['theta_min'] if 'theta_min' in kwargs else 0.1
@@ -62,12 +74,6 @@ def inexact_newton(func, init, **kwargs):
         d_k, exit_code = gmres(G,  (eta_k-1)*g, maxiter=10, restart=20)
         if la.norm(d_k) == 0:
             break
-
-        # while la.norm(func(init + d_k, g_only=True)) > (1 - t * (1 - eta_k)) * la.norm(g):
-        #     g_one = func(init + d_k, g_only=True)
-        #     theta = get_theta(g, d_k, g_one, G, theta_min, theta_max)
-        #     d_k = theta * d_k
-        #     eta_k = 1 - theta * (1 - eta_k)
 
         phi = Phi_func(func, init, d_k)
         alpha = armijo_goldstein_linesearch(phi, safe_guard=20)
