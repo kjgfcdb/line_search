@@ -3,7 +3,7 @@ from sympy import diff
 from sympy.utilities.lambdify import lambdify
 
 
-def fgG(f, x_sympy, **kwargs):
+def fgG(f, x_sympy):
     """对给定的函数进行求导，并返回函数、导数以及Hessian矩阵对应的数值函数
 
     Parameters
@@ -17,17 +17,10 @@ def fgG(f, x_sympy, **kwargs):
     -------
     返回f, g, G，分别是函数、函数的导数、函数的Hessian矩阵对应的数值函数。
     """
-
-    use_G = kwargs['use_G'] if 'use_G' in kwargs else True
     f_sympy = f(x_sympy)
     g_sympy = diff(f_sympy, x_sympy).doit()
-    if use_G:
-        G_sympy = diff(g_sympy, x_sympy).doit()
-        func_list = list(lambdify([x_sympy], func, 'numpy')
-                         for func in (f_sympy, g_sympy, G_sympy))
-    else:
-        func_list = list(lambdify([x_sympy], func, 'numpy')
-                         for func in (f_sympy, g_sympy))
+    G_sympy = diff(g_sympy, x_sympy).doit()
+    func_list = list(lambdify([x_sympy], func, 'numpy') for func in (f_sympy, g_sympy, G_sympy))
     return func_list
 
 
@@ -187,83 +180,32 @@ def extended_powell_singular_numpy(**kwargs):
 
     return f, g, G
 
+def powell_badly_scaled_numpy():
+    """定义的Powell Badly Scaled函数
+    """
+    def powell_badly_scaled(x):
+        x1 = x[0]
+        x2 = x[1]
+        r1 = 1e4 * x1 * x2 - 1
+        r2 = exp(-x1) + exp(-x2) - 1.0001
+        return r1 ** 2 + r2 ** 2
 
-def penalty_i_numpy(**kwargs):
-    n = kwargs['n']
-    gamma = 1e-5
-
-    def f(x):
-        ret = sum((x - 1) ** 2) * gamma
-        ret += (sum(x ** 2) - 0.25) ** 2
-        return ret
-
-    def g(x):
-        return (4 * sum(x**2) - 1 + 2*gamma)*x - 2*gamma
-
-    def G(x):
-        ret = 8 * np.outer(x, x)
-        ret += (4 * x.dot(x) + 2 * gamma - 1) * np.eye(n)
-        return ret
-
-    return f, g, G
+    x_sympy = symarray('x', 2)
+    return fgG(powell_badly_scaled, x_sympy)
 
 
-def trigonometric_numpy(**kwargs):
-    n = kwargs['n']
+def biggs_exp6_numpy(m):
+    """定义的Biggs EXP6函数，m是其函数定义中的m
+    """
+    def biggs_exp6(x):
+        r = []
+        for i in range(m):
+            ti = 0.1 * (i + 1)
+            yi = exp(-ti) - 5 * exp(-10 * ti) + 3 * exp(-4 * ti)
+            temp = x[2] * exp(-ti * x[0]) - x[3] * \
+                exp(-ti * x[1]) + x[5] * exp(-ti * x[4]) - yi
+            r.append(temp)
+        return sum(item ** 2 for item in r)
 
-    def f(x):
-        ii = np.arange(1, n + 1)
-        return sum((n - sum(np.cos(x)) + ii - ii * np.cos(x) - np.sin(x)) ** 2)
-
-    def g(x):
-        ii = np.arange(1, n + 1)
-        rhs = ii * (1 - np.cos(x)) + n - np.sin(x) - sum(np.cos(x))
-        lhs = np.tile(2 * np.sin(x), (n, 1)).T
-        lhs = lhs + np.diag(2 * ii * np.sin(x) - 2 * np.cos(x))
-        return lhs.dot(rhs)
-
-    def G(x):
-        ii = np.arange(1, n + 1)
-        lhs1 = np.tile(2 * np.sin(x), (n, 1)).T
-        lhs1 = lhs1 + np.diag(2 * ii * np.sin(x) - 2 * np.cos(x))
-        rhs1 = np.tile(np.sin(x), (n, 1)) + np.diag(ii * np.sin(x) - np.cos(x))
-
-        lhs2 = np.tile(2 * np.cos(x), (n, 1)).T
-        lhs2 = lhs2 + np.diag(2 * ii * np.cos(x) + 2 * np.sin(x))
-        rhs2 = ii * (1 - np.cos(x)) + n - np.sin(x) - sum(np.cos(x))
-        res = lhs2.dot(rhs2)
-        return lhs1.dot(rhs1) + np.diag(res)
-
-    return f, g, G
-
-
-def extended_rosenbrock_numpy(**kwargs):
-    n = kwargs['n']
-
-    def f(x):
-        ret = 0
-        idxs = list(range(n))
-        for i in idxs[::2]:
-            ret += (10 * (x[i + 1] - x[i] ** 2)) ** 2
-            ret += (1 - x[i]) ** 2
-        return ret
-
-    def g(x):
-        idxs = list(range(n))
-        ret = np.zeros(n)
-        for i in idxs[::2]:
-            ret[i] = 400 * x[i] * (x[i] ** 2 - x[i + 1]) + 2 * x[i] - 2
-            ret[i + 1] = -200 * x[i] ** 2 + 200 * x[i + 1]
-        return ret
-
-    def G(x):
-        idxs = list(range(n))
-        ret = np.zeros((n, n))
-        for i in idxs[::2]:
-            ret[i][i] = 1200 * x[i] ** 2 - 400 * x[i + 1] + 2
-            ret[i][i + 1] = -400 * x[i]
-            ret[i + 1][i] = -400 * x[i]
-            ret[i + 1][i + 1] = 200
-        return ret
-
-    return f, g, G
+    x_sympy = symarray('x', 6)
+    return fgG(biggs_exp6, x_sympy)

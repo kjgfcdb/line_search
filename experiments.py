@@ -1,17 +1,10 @@
 import argparse
-
 import numpy as np
 
 from functions import Evaluater
-from solvers import inexact_newton, l_bfgs, compact_l_bfgs
-from step_size import armijo_goldstein_linesearch, wolfe_powell_linesearch
 
 
 SOLVERS = {
-    "inexact_newton": inexact_newton,
-    "in": inexact_newton,
-    "lbfgs": l_bfgs,
-    "clbfgs": compact_l_bfgs
 }
 
 
@@ -48,30 +41,16 @@ if __name__ == '__main__':
         help="The solver that solves this optimization problem"
     )
     parser.add_argument(
-        "-n",
-        type=int,
-        default=1000,
-    )
-    parser.add_argument(
         "-m",
         type=int,
         default=4,
     )
-    parser.add_argument(
-        "-c",
-        type=int,
-        default=1
-    )
     args = parser.parse_args()
     func_name = args.func
     solver_name = args.solver
-    n = args.n
     m = args.m
-    choice = args.c
 
     print(args)
     np.set_printoptions(precision=4, suppress=True)  # 设置浮点精度
 
-    # main(func_name, solver_name, n=n, m=m, choice=choice)
-    # main("er", "in", choice=2, n=1000)
     main("tri", "lbfgs", n=5000, m=9)
