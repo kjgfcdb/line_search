@@ -1,5 +1,5 @@
 import numpy as np
-from sympy import diff
+from sympy import diff, symarray, exp
 from sympy.utilities.lambdify import lambdify
 
 
@@ -20,7 +20,8 @@ def fgG(f, x_sympy):
     f_sympy = f(x_sympy)
     g_sympy = diff(f_sympy, x_sympy).doit()
     G_sympy = diff(g_sympy, x_sympy).doit()
-    func_list = list(lambdify([x_sympy], func, 'numpy') for func in (f_sympy, g_sympy, G_sympy))
+    func_list = list(lambdify([x_sympy], func, 'numpy')
+                     for func in (f_sympy, g_sympy, G_sympy))
     return func_list
 
 
@@ -69,8 +70,8 @@ class Evaluater:
             函数名
         """
         kwargs['func_name'] = func_name
-        n = kwargs['n']
         if func_name in ['extended_powell_singular', "eps"]:
+            n = kwargs['n']
             func_list = extended_powell_singular_numpy(**kwargs)
             init = []
             for i in range(n):
@@ -82,18 +83,12 @@ class Evaluater:
                     init.append(0)
                 else:
                     init.append(1)
-        elif func_name in ["penalty_i", "pi"]:
-            func_list = penalty_i_numpy(**kwargs)
-            init = [i + 1 for i in range(n)]
-        elif func_name in ["trigonometric", "tri"]:
-            func_list = trigonometric_numpy(**kwargs)
-            init = list(1 / n for i in range(n))
-        elif func_name in ["extended_rosenbrock", "er"]:
-            func_list = extended_rosenbrock_numpy(**kwargs)
-            init = []
-            for i in range(n // 2):
-                init.append(-1.2)
-                init.append(1)
+        elif func_name in ["powell_badly_scaled_numpy", "pbs"]:
+            func_list = powell_badly_scaled_numpy()
+            init = [0, 1]
+        elif func_name in ["trigonometric", "be"]:
+            func_list = biggs_exp6_numpy(**kwargs)
+            init = [1, 2, 1, 1, 1, 1]
         else:
             raise NotImplementedError()
 
@@ -126,6 +121,7 @@ class Evaluater:
 
 
 def extended_powell_singular_numpy(**kwargs):
+    # m =20,40,60,80
     n = kwargs['n']
 
     def f(x):
@@ -147,11 +143,14 @@ def extended_powell_singular_numpy(**kwargs):
             if i % 4 == 0:
                 ret[i] = 2 * x[i] + 20 * x[i + 1] + 40 * (x[i] - x[i + 3]) ** 3
             elif i % 4 == 1:
-                ret[i] = 20 * x[i - 1] + 200 * x[i] + 4 * (x[i] - 2 * x[i + 1]) ** 3
+                ret[i] = 20 * x[i - 1] + 200 * x[i] + \
+                         4 * (x[i] - 2 * x[i + 1]) ** 3
             elif i % 4 == 2:
-                ret[i] = 10 * x[i] - 10 * x[i + 1] - 8 * (x[i - 1] - 2 * x[i]) ** 3
+                ret[i] = 10 * x[i] - 10 * x[i + 1] - \
+                         8 * (x[i - 1] - 2 * x[i]) ** 3
             else:
-                ret[i] = -10 * x[i - 1] + 10 * x[i] - 40 * (x[i - 3] - x[i]) ** 3
+                ret[i] = -10 * x[i - 1] + 10 * \
+                         x[i] - 40 * (x[i - 3] - x[i]) ** 3
         return ret
 
     def G(x):
@@ -180,9 +179,11 @@ def extended_powell_singular_numpy(**kwargs):
 
     return f, g, G
 
+
 def powell_badly_scaled_numpy():
     """定义的Powell Badly Scaled函数
     """
+
     def powell_badly_scaled(x):
         x1 = x[0]
         x2 = x[1]
@@ -194,18 +195,31 @@ def powell_badly_scaled_numpy():
     return fgG(powell_badly_scaled, x_sympy)
 
 
-def biggs_exp6_numpy(m):
+def biggs_exp6_numpy(**kwargs):
     """定义的Biggs EXP6函数，m是其函数定义中的m
     """
+    #  m = 8,9,10,11,12
+    m = kwargs['m']
+
     def biggs_exp6(x):
         r = []
         for i in range(m):
             ti = 0.1 * (i + 1)
             yi = exp(-ti) - 5 * exp(-10 * ti) + 3 * exp(-4 * ti)
             temp = x[2] * exp(-ti * x[0]) - x[3] * \
-                exp(-ti * x[1]) + x[5] * exp(-ti * x[4]) - yi
+                   exp(-ti * x[1]) + x[5] * exp(-ti * x[4]) - yi
             r.append(temp)
         return sum(item ** 2 for item in r)
 
     x_sympy = symarray('x', 6)
     return fgG(biggs_exp6, x_sympy)
+
+
+class Q_func:
+    def __init__(self, f, g, G):
+        self.f = f
+        self.g = g
+        self.G = G
+
+    def __call__(self, d):
+        return self.f + self.g.dot(d) + 0.5 * d.dot(self.G).dot(d)

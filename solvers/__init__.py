@@ -1,2 +1,4 @@
-from .inexact_newton import inexact_newton
-from .L_BFGS import l_bfgs, compact_l_bfgs
+from .trust_region import TrustRegion, hebden
+from .stable_newton import stable_newton
+from .damp_newton import damp_newton
+from .fletcher_freeman import fletcher_freeman
