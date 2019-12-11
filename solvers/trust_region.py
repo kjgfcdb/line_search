@@ -115,7 +115,7 @@ class TrustRegion:
         nf, ng, nG = None, None, None
         updated = False  # 节省一些计算量
         iters = 0
-        while np.abs(f - f_prev) > self._epsilon and iters < 200:
+        while np.abs(f - f_prev) > self._epsilon:
             iters += 1
             if updated:
                 f, g, G = nf, ng, nG
@@ -132,8 +132,8 @@ class TrustRegion:
             f = nf
             if gamma < 0.25:
                 self._delta = self._delta / 4
-            elif gamma > 0.75 and np.abs(norm(d) - self._delta) < self._epsilon:
-                self._delta = self._delta * 2
+            elif gamma > 0.75 and norm(d) == self._delta:  #np.abs(norm(d) - self._delta) < self._epsilon:
+                self._delta = min(self._delta * 2, 1)
             if gamma <= 0:  # 如果gamma<=0，并不会直接退出，因为我们f已经更新了，因此相当于再给了一次机会求解
                 continue
             x0 = x0 + d

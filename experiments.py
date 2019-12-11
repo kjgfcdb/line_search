@@ -6,7 +6,7 @@ from solvers.trust_region import TrustRegion, hebden, cauthy, two_dimensional_su
 from solvers import stable_newton, damp_newton, fletcher_freeman
 
 EPSILON = 1e-12
-DELTA = 1
+DELTA = 0.1
 SOLVERS = {
     "sn": stable_newton,
     "dn": damp_newton,
