@@ -2,17 +2,18 @@ import argparse
 import numpy as np
 
 from functions import Evaluater
-from solvers.trust_region import TrustRegion, hebden, cauthy
+from solvers.trust_region import TrustRegion, hebden, cauthy, two_dimensional_subspace_min
 from solvers import stable_newton, damp_newton, fletcher_freeman
 
 EPSILON = 1e-12
-DELTA = 0.1
+DELTA = 1
 SOLVERS = {
     "sn": stable_newton,
     "dn": damp_newton,
     "ff": fletcher_freeman,
     "hd": TrustRegion(hebden, EPSILON, DELTA),
     "ct": TrustRegion(cauthy, EPSILON, DELTA),
+    "2d": TrustRegion(two_dimensional_subspace_min, EPSILON, DELTA)
 }
 
 

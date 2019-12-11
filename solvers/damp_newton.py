@@ -1,5 +1,6 @@
 import numpy as np
 from functions import Phi_func
+from tqdm import tqdm
 
 
 def damp_newton(func, x0, line_search_func, **kwargs):
@@ -19,6 +20,7 @@ def damp_newton(func, x0, line_search_func, **kwargs):
     safe_guard = kwargs['safe_guard'] if 'safe_guard' in kwargs else None
     f_hist = None
     k = 0
+    bar = tqdm()
     while True:
         f, g, G = func(x0)
         if safe_guard is not None and k > safe_guard:
@@ -31,6 +33,8 @@ def damp_newton(func, x0, line_search_func, **kwargs):
         alpha = line_search_func(phi, **kwargs)
         x0 = x0 + alpha * d
         k += 1
+        bar.desc = f"f:{f}"
+        bar.update()
         # print(f"Damp Newton: Epoch: {k}\t function value: {f}")
-    print(f"Damp Newton: Epoch: {k}\t function value: {f}")
+    damp_newton.iters = bar.n
     return x0, f, g

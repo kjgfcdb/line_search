@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import tqdm
-from numpy.linalg import norm
+from numpy.linalg import norm, eigvals, inv, eig
 from functions import Q_func
 
 
@@ -9,8 +9,9 @@ def hebden(Q: Q_func, delta):
     I = np.eye(len(Q.g))
     if norm(d_0) <= delta:
         return d_0
-    nu = 0
-    epsilon = 1e-2
+    epsilon = 1e-6
+    min_eigval = min(eigvals(Q.G))
+    nu = max(-1.01 * min_eigval, epsilon)
     while True:
         G_inv = np.linalg.inv(Q.G + nu * I)
         d_nu = -G_inv.dot(Q.g)
@@ -34,6 +35,71 @@ def cauthy(Q: Q_func, delta):
     return tau * d_SD
 
 
+def span(s1, s2, g, G, delta):
+    # 构造M
+    m1 = s1
+    m2 = s2 - s2.dot(s1) * s1 / (s1.dot(s1))
+    m1 = m1 / norm(m1)
+    m2 = m2 / norm(m2)
+    M = np.hstack((m1.reshape(len(m1), 1), m2.reshape(len(m2), 1)))  # m x2
+
+    A = np.matmul(np.matmul(M.T, G), M)
+    B = g.dot(M)
+
+    a1 = A[0][0]
+    a2 = A[0][1]
+    a3 = A[1][1]
+    a4 = B[0]
+    a5 = B[1]
+
+    c1 = delta * (-a2 * delta + a4)
+    c2 = 2 * delta * ((a3 - a1) * delta + a5)
+    c3 = 6 * delta ** 2 * a2
+    c4 = c2
+    c5 = -a2 * delta ** 2 - a4 * delta
+    roots = np.roots([c1, c2, c3, c4, c5])
+    final_q = None
+    corr_val = np.inf
+    for root in roots:
+        if not np.isreal(root):
+            continue
+        root = np.real(root)
+        x = 2 * delta * root / (1 + root ** 2)
+        y = delta * (1 - root ** 2) / (1 + root ** 2)
+        q = np.array([x, y])
+        cur_func_val = B.dot(q) + 1 / 2 * q.dot(A).dot(q)
+        if cur_func_val < corr_val:
+            corr_val = cur_func_val
+            final_q = q
+    return M.dot(final_q)
+
+
+def two_dimensional_subspace_min(Q: Q_func, delta):
+    tol = 1e-10
+    vals, vectors = eig(Q.G)
+    v = min(vals)
+    if v < 0:
+        v = 1.5 * v
+    alpha = np.abs(v)
+    if v > tol:  # 正定矩阵
+        d = -inv(Q.G).dot(Q.g)
+        if norm(d) <= delta:
+            return d
+        return span(Q.g, d, Q.g, Q.G, delta)
+    elif alpha < tol:  # 存在0特征值
+        return cauthy(Q, delta)
+    else:  # 负特征值
+        d = -inv(Q.G + alpha * np.eye(len(Q.g))).dot(Q.g)
+        if norm(d) <= delta:
+            q = vectors[:, np.argmin(vals)]
+            q = q / norm(q)
+            gamma = -d.dot(q) + np.sqrt((d.dot(q)) ** 2 + delta ** 2 - d.dot(d))
+            d = d + gamma * q
+            return d
+        else:
+            return span(Q.g, d, Q.g, Q.G, delta)
+
+
 class TrustRegion:
     """信赖域方法求解器"""
 
@@ -41,7 +107,6 @@ class TrustRegion:
         self._d_solver = d_solver
         self._epsilon = epsilon
         self._delta = delta
-        self._iter = 0
 
     def __call__(self, func, x0, **kwargs):
         f_prev = -np.inf
@@ -49,7 +114,9 @@ class TrustRegion:
         f, g, G = func(x0)
         nf, ng, nG = None, None, None
         updated = False  # 节省一些计算量
-        while np.abs(f - f_prev) > self._epsilon:
+        iters = 0
+        while np.abs(f - f_prev) > self._epsilon and iters < 200:
+            iters += 1
             if updated:
                 f, g, G = nf, ng, nG
                 updated = False
