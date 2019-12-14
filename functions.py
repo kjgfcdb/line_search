@@ -86,7 +86,7 @@ class Evaluater:
         elif func_name in ["powell_badly_scaled_numpy", "pbs"]:
             func_list = powell_badly_scaled_numpy()
             init = [0, 1]
-        elif func_name in ["trigonometric", "be"]:
+        elif func_name in ["biggsexp6", "be6"]:
             func_list = biggs_exp6_numpy(**kwargs)
             init = [1, 2, 1, 1, 1, 1]
         else:

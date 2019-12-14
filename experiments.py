@@ -42,7 +42,8 @@ def main(func_name, solver_name, ls_method, **kwargs):
     solver = SOLVERS[solver_name]
     kwargs.update({
         "line_search_func": line_search_func,
-        "safe_guard": SAFE_GUARD
+        "safe_guard": SAFE_GUARD,
+        "epsilon": EPSILON
     })
     x, f, g = solver(func, init, **kwargs)
 
@@ -54,12 +55,12 @@ def main(func_name, solver_name, ls_method, **kwargs):
         print("%.4g" % x_norm)
         print("%.4g" % x_mean)
     else:
-        print(x)
+        with np.printoptions(precision=3, suppress=True):
+            print(x)
     print("%.4g" % f)
     print("%.4g" % g_norm)
     print(solver.iters)
     print(func.func_calls)
-    print("%.2f" % solver.time)
 
 
 if __name__ == '__main__':
@@ -79,7 +80,7 @@ if __name__ == '__main__':
         "-ls",
         type=str,
         help="The line search method you want to use",
-        default="wolfe_powell"
+        default="armijo_goldstein"
     )
     parser.add_argument(
         "-m",

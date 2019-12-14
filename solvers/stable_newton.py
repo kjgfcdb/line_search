@@ -28,7 +28,7 @@ def stable_newton(func, x0, line_search_func, **kwargs):
     while True:
         f, g, G = func(x0)
         if f_hist is not None:
-            if f > f_hist and kwargs['line_search_method'] != 'gll':
+            if f > f_hist:
                 break
             if np.abs(f - f_hist) < epsilon:
                 break
@@ -55,6 +55,7 @@ def stable_newton(func, x0, line_search_func, **kwargs):
         alpha = line_search_func(phi, safe_guard=safe_guard)
         x0 = x0 + alpha * d
         k += 1
+        bar.desc = f"f:{f}"
         bar.update()
     bar.close()
     stable_newton.iters = bar.n
