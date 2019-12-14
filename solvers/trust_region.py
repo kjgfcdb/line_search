@@ -5,6 +5,19 @@ from functions import Q_func
 
 
 def hebden(Q: Q_func, delta):
+    """Hebden迭代算法
+    
+    Parameters
+    ----------
+    Q : Q_func
+        要求解的Q函数
+    delta : float
+        信赖域半径
+    
+    Returns
+    -------
+    d_nu：求解得到的信赖域方向
+    """
     d_0 = -np.linalg.inv(Q.G).dot(Q.g)
     I = np.eye(len(Q.g))
     if norm(d_0) <= delta:
@@ -25,6 +38,19 @@ def hebden(Q: Q_func, delta):
 
 
 def cauthy(Q: Q_func, delta):
+    """柯西点算法
+    
+    Parameters
+    ----------
+    Q : Q_func
+        要求解的Q函数
+    delta : float
+        信赖域半径
+    
+    Returns
+    -------
+    d：求解得到的信赖域方向
+    """
     d_SD = -delta * Q.g / norm(Q.g)
     gGg = Q.g.dot(Q.G).dot(Q.g)
     if gGg <= 0:
@@ -42,8 +68,24 @@ def span(s1, s2, g, G, delta):
         s.t. norm(x) <= delta
     且x为由s1和s2张成的子空间中的一个向量，即
         x = a * s1 + b * s2
-    """
 
+    Parameters
+    ----------
+    s1 : np.ndarray
+        第一个向量
+    s2 : np.ndarray
+        第二个向量
+    g : np.ndarray
+        当前点的梯度向量
+    G : np.ndarray
+        当前点的Hesse矩阵
+    delta : float
+        信赖域半径
+    
+    Returns
+    -------
+    x：求解上述函数得到的解
+    """
     # 构造M
     m1 = s1
     m2 = s2 - s2.dot(s1) * s1 / (s1.dot(s1))
@@ -84,6 +126,19 @@ def span(s1, s2, g, G, delta):
 
 
 def two_d_subspace_min(Q: Q_func, delta):
+    """二维子空间极小化算法
+    
+    Parameters
+    ----------
+    Q : Q_func
+        要求解的Q函数
+    delta : float
+        信赖域半径
+    
+    Returns
+    -------
+    d：求解得到的信赖域方向
+    """
     tol = 1e-10
     vals, vectors = eig(Q.G)
     v = min(vals)
@@ -120,6 +175,21 @@ class TrustRegion:
         self.time = 0
 
     def __call__(self, func, x0, **kwargs):
+        """调用信赖域方法求解
+        
+        Parameters
+        ----------
+        func : Evaluater
+            要求解的函数，调用返回函数值、梯度、Hesse矩阵
+        x0 : list
+            优化函数的初始值
+        
+        Returns
+        -------
+        x0：最优解
+        f：最优解对应的函数值
+        g：最优解对应的函数梯度
+        """
         f_prev = -np.inf
         bar = tqdm()
         f, g, G = func(x0)

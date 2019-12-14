@@ -121,7 +121,8 @@ class Evaluater:
 
 
 def extended_powell_singular_numpy(**kwargs):
-    # m =20,40,60,80
+    """定义的extended powell singular函数
+    """
     m = kwargs['m']
 
     def f(x):
