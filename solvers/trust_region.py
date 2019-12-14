@@ -11,7 +11,7 @@ def hebden(Q: Q_func, delta):
         return d_0
     epsilon = 1e-6
     min_eigval = min(eigvals(Q.G))
-    nu = max(-1.01 * min_eigval, epsilon)
+    nu = max(-1.02 * min_eigval, epsilon)
     while True:
         G_inv = np.linalg.inv(Q.G + nu * I)
         d_nu = -G_inv.dot(Q.g)
@@ -36,6 +36,14 @@ def cauthy(Q: Q_func, delta):
 
 
 def span(s1, s2, g, G, delta):
+    """
+    求解
+        min g^T x + 0.5 * x^T G x
+        s.t. norm(x) <= delta
+    且x为由s1和s2张成的子空间中的一个向量，即
+        x = a * s1 + b * s2
+    """
+
     # 构造M
     m1 = s1
     m2 = s2 - s2.dot(s1) * s1 / (s1.dot(s1))
@@ -57,6 +65,7 @@ def span(s1, s2, g, G, delta):
     c3 = 6 * delta ** 2 * a2
     c4 = c2
     c5 = -a2 * delta ** 2 - a4 * delta
+
     roots = np.roots([c1, c2, c3, c4, c5])
     final_q = None
     corr_val = np.inf
@@ -74,7 +83,7 @@ def span(s1, s2, g, G, delta):
     return M.dot(final_q)
 
 
-def two_dimensional_subspace_min(Q: Q_func, delta):
+def two_d_subspace_min(Q: Q_func, delta):
     tol = 1e-10
     vals, vectors = eig(Q.G)
     v = min(vals)
@@ -88,7 +97,7 @@ def two_dimensional_subspace_min(Q: Q_func, delta):
         return span(Q.g, d, Q.g, Q.G, delta)
     elif alpha < tol:  # 存在0特征值
         return cauthy(Q, delta)
-    else:  # 负特征值
+    else:  # 存在负特征值
         d = -inv(Q.G + alpha * np.eye(len(Q.g))).dot(Q.g)
         if norm(d) <= delta:
             q = vectors[:, np.argmin(vals)]
@@ -107,6 +116,8 @@ class TrustRegion:
         self._d_solver = d_solver
         self._epsilon = epsilon
         self._delta = delta
+        self.iters = 0
+        self.time = 0
 
     def __call__(self, func, x0, **kwargs):
         f_prev = -np.inf
@@ -114,9 +125,8 @@ class TrustRegion:
         f, g, G = func(x0)
         nf, ng, nG = None, None, None
         updated = False  # 节省一些计算量
-        iters = 0
+        safe_guard = kwargs['safe_guard'] if 'safe_guard' in kwargs else None
         while np.abs(f - f_prev) > self._epsilon:
-            iters += 1
             if updated:
                 f, g, G = nf, ng, nG
                 updated = False
@@ -132,7 +142,7 @@ class TrustRegion:
             f = nf
             if gamma < 0.25:
                 self._delta = self._delta / 4
-            elif gamma > 0.75 and norm(d) == self._delta:  #np.abs(norm(d) - self._delta) < self._epsilon:
+            elif gamma > 0.75 and norm(d) == self._delta:  # np.abs(norm(d) - self._delta) < self._epsilon:
                 self._delta = min(self._delta * 2, 1)
             if gamma <= 0:  # 如果gamma<=0，并不会直接退出，因为我们f已经更新了，因此相当于再给了一次机会求解
                 continue
@@ -140,4 +150,9 @@ class TrustRegion:
             updated = True
             bar.desc = f"f:{f}"
             bar.update()
+            if safe_guard is not None and bar.n >= safe_guard:
+                break
+        bar.close()
+        self.iters = bar.n
+        self.time = bar.last_print_t - bar.start_t
         return x0, f, g

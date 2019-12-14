@@ -71,10 +71,10 @@ class Evaluater:
         """
         kwargs['func_name'] = func_name
         if func_name in ['extended_powell_singular', "eps"]:
-            n = kwargs['n']
+            m = kwargs['m']
             func_list = extended_powell_singular_numpy(**kwargs)
             init = []
-            for i in range(n):
+            for i in range(m):
                 if i % 4 == 0:
                     init.append(3)
                 elif i % 4 == 1:
@@ -122,11 +122,11 @@ class Evaluater:
 
 def extended_powell_singular_numpy(**kwargs):
     # m =20,40,60,80
-    n = kwargs['n']
+    m = kwargs['m']
 
     def f(x):
         ret = 0
-        for i in range(n):
+        for i in range(m):
             if i % 4 == 0:
                 ret += (x[i] + 10 * x[i + 1]) ** 2
             elif i % 4 == 1:
@@ -138,8 +138,8 @@ def extended_powell_singular_numpy(**kwargs):
         return ret
 
     def g(x):
-        ret = np.zeros(n)
-        for i in range(n):
+        ret = np.zeros(m)
+        for i in range(m):
             if i % 4 == 0:
                 ret[i] = 2 * x[i] + 20 * x[i + 1] + 40 * (x[i] - x[i + 3]) ** 3
             elif i % 4 == 1:
@@ -154,8 +154,8 @@ def extended_powell_singular_numpy(**kwargs):
         return ret
 
     def G(x):
-        ret = np.zeros((n, n))
-        for i in range(0, n, 4):
+        ret = np.zeros((m, m))
+        for i in range(0, m, 4):
             ret[i][i] = 120 * (x[i] - x[i + 3]) ** 2 + 2
             ret[i][i + 1] = 20
             ret[i][i + 2] = 0

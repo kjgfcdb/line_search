@@ -4,6 +4,7 @@ import numpy as np
 
 from decomp import bunch_parlett
 from functions import Phi_func
+from tqdm import tqdm
 
 
 def _get_d(g, G):
@@ -67,6 +68,7 @@ def fletcher_freeman(func, x0, line_search_func, **kwargs):
     k = 0
     f_hist = None
     failed = False
+    bar = tqdm()
     while True:
         f, g, G = func(x0)
         if safe_guard is not None and k > safe_guard:
@@ -85,7 +87,10 @@ def fletcher_freeman(func, x0, line_search_func, **kwargs):
             break
         x0 = x0 + alpha * d
         k += 1
-    print(f"Fletcher Freeman: Epoch: {k}\t function value: {f}")
+        bar.desc = f"f:{f}"
+        bar.update()
     if failed:
         print("\n", "<"*10, "Optimization failed!", ">"*10, "\n")
+    fletcher_freeman.iters = bar.n
+    fletcher_freeman.time = bar.last_print_t - bar.start_t
     return x0, f, g

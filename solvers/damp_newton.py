@@ -35,6 +35,6 @@ def damp_newton(func, x0, line_search_func, **kwargs):
         k += 1
         bar.desc = f"f:{f}"
         bar.update()
-        # print(f"Damp Newton: Epoch: {k}\t function value: {f}")
     damp_newton.iters = bar.n
+    damp_newton.time = bar.last_print_t - bar.start_t
     return x0, f, g

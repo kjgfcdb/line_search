@@ -58,4 +58,5 @@ def stable_newton(func, x0, line_search_func, **kwargs):
         bar.update()
     bar.close()
     stable_newton.iters = bar.n
+    stable_newton.time = bar.last_print_t - bar.start_t
     return x0, f, g
